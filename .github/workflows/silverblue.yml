@@ -1,0 +1,14 @@
+name: Build Silverblue
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-action.yml
+    with:
+      image-name: silverblue
+      containerfile: silverblue/Containerfile
+      tag: latest

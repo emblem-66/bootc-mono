@@ -1,0 +1,46 @@
+name: Build Image (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      image-name:
+        required: true
+        type: string
+      containerfile:
+        required: true
+        type: string
+      tag:
+        required: false
+        type: string
+        default: latest
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build image
+        id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ inputs.image-name }}
+          tags: ${{ inputs.tag }}
+          containerfiles: ${{ inputs.containerfile }}
+
+      - name: Rechunk
+        uses: hhd-dev/rechunk@v1
+        with:
+          image: ${{ inputs.image-name }}:${{ inputs.tag }}
+
+      - name: Push to GHCR
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ inputs.image-name }}
+          tags: ${{ inputs.tag }}
+          registry: ghcr.io/${{ github.repository_owner }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}

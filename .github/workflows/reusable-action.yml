@@ -27,8 +27,11 @@ jobs:
       - name: Free disk space (hastd)
         uses: hastd/free-disk-space@main
 
+      - name: Install just
+        uses: extractions/setup-just@main
+
       - name: Build image (buildah-build)
-        id: build
+        #id: build
         uses: redhat-actions/buildah-build@main
         with:
           image: ${{ inputs.image-name }}

@@ -1,0 +1,21 @@
+name: Silverblue BASIC
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+env:
+  tag: ghcr.io/${{ github.actor }}/${{ github.repository_owner }}/silverblue:basic
+jobs: 
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout action
+      uses: actions/checkout@v6
+    - name: Build image
+      run: podman build -f silverblue/Containerfile -t ${{ env.tag }} .
+    - name: Push image
+      run: podman push --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} ${{ env.tag }}
+

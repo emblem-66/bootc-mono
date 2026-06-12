@@ -31,7 +31,7 @@ jobs:
           tags: ${{ inputs.tag }}
           containerfiles: ${{ inputs.containerfile }}
 
-      - name: Rechunk
+      - name: Rechunk (hhd-dev)
         uses: hhd-dev/rechunk@v1
         with:
           image: ${{ inputs.image-name }}:${{ inputs.tag }}

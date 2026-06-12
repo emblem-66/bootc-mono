@@ -21,9 +21,13 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@main
+      - name: Action Checkout
+        uses: actions/checkout@main
 
-      - name: Build image
+      - name: Free disk space (hastd)
+        uses: hastd/free-disk-space@main
+
+      - name: Build image (buildah-build)
         id: build
         uses: redhat-actions/buildah-build@main
         with:

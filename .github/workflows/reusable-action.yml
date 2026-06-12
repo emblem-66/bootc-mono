@@ -25,19 +25,19 @@ jobs:
 
       - name: Build image
         id: build
-        uses: redhat-actions/buildah-build@v2
+        uses: redhat-actions/buildah-build@main
         with:
           image: ${{ inputs.image-name }}
           tags: ${{ inputs.tag }}
           containerfiles: ${{ inputs.containerfile }}
 
       - name: Rechunk (hhd-dev)
-        uses: hhd-dev/rechunk@v1
+        uses: hhd-dev/rechunk@main
         with:
           image: ${{ inputs.image-name }}:${{ inputs.tag }}
 
       - name: Push to GHCR
-        uses: redhat-actions/push-to-registry@v2
+        uses: redhat-actions/push-to-registry@main
         with:
           image: ${{ inputs.image-name }}
           tags: ${{ inputs.tag }}

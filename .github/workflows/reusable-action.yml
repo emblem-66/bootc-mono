@@ -13,6 +13,9 @@ on:
         required: false
         type: string
         default: latest
+      rechunk:
+        required: false
+        type: string
 
 jobs:
   build:
@@ -39,9 +42,29 @@ jobs:
           containerfiles: ${{ inputs.containerfile }}
 
       - name: Rechunk (hhd-dev)
+        if: ${{ inputs.rechunk == 'hhd-dev' }}
         uses: hhd-dev/rechunk@main
         with:
           image: ${{ inputs.image-name }}:${{ inputs.tag }}
+
+      - name: Rechunk (chunkah)
+        if: ${{ inputs.rechunk == 'chunkah' }}
+        run: |
+          set -xeuo pipefail
+          IMAGE="${{ inputs.image-name }}:${{ inputs.tag }}"
+          export CHUNKAH_CONFIG_STR=$(podman inspect "${IMAGE}")
+          podman run --rm \
+            --mount=type=image,src="${IMAGE}",target=/chunkah \
+            -e CHUNKAH_CONFIG_STR \
+            quay.io/coreos/chunkah:latest \
+            build \
+            --compressed \
+            --max-layers 128 \
+            --prune /sysroot/ \
+            --prune /ostree \
+            --label ostree.commit- --label ostree.final-diffid- \
+            --tag "${IMAGE}" \
+          | podman load
 
       - name: Push to GHCR
         uses: redhat-actions/push-to-registry@main

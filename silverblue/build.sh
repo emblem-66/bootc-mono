@@ -1,0 +1,237 @@
+#!/usr/bin/env bash
+set -xeuo pipefail
+
+
+# OPT writable
+#rm -rf /opt && ln -s /var/opt /opt
+
+
+
+
+rpm -qa --qf '%{NAME}\n' | sort
+
+rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > packagelist_start.txt
+
+
+
+
+dnf -y install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release{,-extras,-mesa} 
+#dnf -y install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+#dnf -y config-manager setopt "*terra*".priority=3 #"*terra*".exclude="nerd-fonts topgrade scx-tools scx-scheds steam python3-protobuf zlib-devel"
+#dnf -y config-manager setopt "terra-mesa".enabled=false
+#dnf -y config-manager setopt "*rpmfusion*".priority=5 "*rpmfusion*".exclude="mesa-* steam*"
+#dnf -y config-manager setopt "*fedora*".exclude="mesa-*" # kernel-core-* kernel-modules-* kernel-uki-virt-*"
+
+# --setopt=install_weak_deps=False
+
+dnf install -y https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+dnf config-manager setopt fedora-cisco-openh264.enabled=1
+
+#dnf config-manager setopt fedora-cisco-openh264.enabled=0
+
+#dnf config-manager addrepo --from-repofile=https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+#sed -i '0,/enabled=0/s/enabled=0/enabled=1/' /etc/yum.repos.d/terra-mesa.repo
+#dnf config-manager setopt terra.enabled=1
+#dnf install -y --enablerepo='terra' terra-release
+#dnf install -y --enablerepo='terra' terra-release-extras
+#dnf install -y --enablerepo='terra' terra-release-mesa
+#dnf install -y --enablerepo='terra' terra-release-nvidia
+#dnf install -y --enablerepo='terra' terra-release-multimedia
+
+#dnf install -y terra-release*
+#dnf install -y terra-release
+#dnf install -y terra-release-extras
+#dnf install -y terra-release-mesa
+#dnf install -y terra-release-nvidia
+#dnf install -y terra-release-multimedia
+
+#dnf swap mesa-va-drivers-freeworld mesa-va-drivers
+#dnf install -y mangowm noctalia-shell
+
+# Docker
+dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+dnf copr enable -y che/nerd-fonts
+dnf config-manager setopt copr:copr.fedorainfracloud.org:che:nerd-fonts.enabled=0
+dnf install -y --enablerepo='copr:copr.fedorainfracloud.org:che:nerd-fonts' nerd-fonts
+
+# Tailscale
+dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+dnf config-manager setopt tailscale-stable.enabled=0
+dnf install -y --enablerepo='tailscale-stable' tailscale
+#dnf install -y --repofrompath=tailscale-stable,https://pkgs.tailscale.com/stable/fedora/tailscale.repo tailscale
+#curl -fsSL --create-dirs -o /etc/yum.repos.d/tailscale.repo \
+#https://raw.githubusercontent.com/emblem-66/bootc-config/refs/heads/main/system_files/etc/yum.repos.d/tailscale.repo
+#dnf install -y tailscale
+
+# Adwaita & Morewaita
+dnf copr enable -y trixieua/morewaita-icon-theme
+dnf config-manager setopt copr:copr.fedorainfracloud.org:trixieua:morewaita-icon-theme.enabled=0
+dnf install -y --enablerepo='copr:copr.fedorainfracloud.org:trixieua:morewaita-icon-theme' morewaita-icon-theme
+#dnf install -y adw-gtk3-theme morewaita-icon-theme
+#curl -fsSL --create-dirs -o /etc/yum.repos.d/morewaita.repo \
+#https://raw.githubusercontent.com/emblem-66/bootc-config/refs/heads/main/system_files/etc/yum.repos.d/morewaita.repo
+#dnf install -y adw-gtk3-theme morewaita-icon-theme
+
+dnf copr enable -y peterwu/rendezvous
+dnf config-manager setopt copr:copr.fedorainfracloud.org:peterwu:rendezvous.enabled=0
+dnf install -y --enablerepo='copr:copr.fedorainfracloud.org:peterwu:rendezvous' bibata-cursor-themes
+
+dnf install -y papirus-icon-theme adw-gtk3-theme 
+
+
+# Brave & Helium
+#dnf config-manager addrepo --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+#dnf config-manager setopt brave-browser.enabled=0
+#dnf install -y --enablerepo='brave-browser' brave-origin
+#dnf install -y helium-browser-bin
+
+# MergerFS
+#dnf copr enable -y errornointernet/mergerfs
+#dnf config-manager setopt copr:copr.fedorainfracloud.org:errornointernet:mergerfs.enabled=0
+#dnf install -y --enablerepo='copr:copr.fedorainfracloud.org:errornointernet:mergerfs' mergerfs
+#dnf install -y mergerfs
+#curl -fsSL --create-dirs -o /etc/yum.repos.d/mergerfs.repo \
+#https://raw.githubusercontent.com/emblem-66/bootc-config/refs/heads/main/system_files/etc/yum.repos.d/mergerfs.repo
+#dnf install -y mergerfs
+
+
+dnf install -y greetd tuigreet
+
+dnf copr enable -y yalter/niri
+dnf config-manager setopt copr:copr.fedorainfracloud.org:yalter:niri.enabled=0
+dnf install -y --enablerepo='copr:copr.fedorainfracloud.org:yalter:niri' niri
+
+dnf install -y \
+    fuzzel \
+    alacritty \
+    SwayNotificationCenter \
+    swaybg \
+    swayidle \
+    swaylock \
+    waybar \
+    mako \
+    grim \
+    slurp \
+
+
+# File system
+dnf install -y \
+    smartmontools \
+    btrfsd \
+    btrfsmaintenance \
+
+# Screen brightness
+dnf install -y ddcutil
+
+# Debug
+dnf install -y evtest
+
+# OpenRGB
+#dnf install -y openrgb
+
+# fancontrol
+#dnf install -y fancontrol-gui
+
+# Cockpit
+dnf install -y cockpit cockpit-podman
+
+# Podman
+dnf install -y podman podman-compose
+
+# Remove Firefox
+dnf remove -y firefox*
+
+# Toolbox Distrobox swap
+dnf remove -y toolbox
+dnf install -y distrobox
+
+
+dnf install -y libfreeaptx libldac fdk-aac
+
+# Remove GNOME stuff
+dnf remove -y \
+    *backgrounds* \
+    fedora-bookmarks \
+    fedora-chromium-config* \
+    fedora-flathub-remote \
+    fedora-third-party \
+    fedora-workstation-repositories \
+    gnome-classic-session \
+    gnome-shell-extension* \
+    gnome-software* \
+    gnome-tour \
+    malcontent-control \
+    qemu-user-static* \
+    sssd* \
+    virtualbox-guest-additions \
+    yelp* \
+    abrt \
+
+dnf autoremove -y
+
+dnf search winboat
+
+dnf search brave
+
+dnf install -y steam
+
+# Install the cachyos kernel
+dnf copr enable -y bieszczaders/kernel-cachyos-lto
+dnf copr enable -y bieszczaders/kernel-cachyos-addons
+dnf install -y kernel-cachyos-lto kernel-cachyos-lto-devel-matched
+setsebool -P domain_kernel_load_modules on
+
+
+
+
+dnf install -y \
+    scx-scheds \
+    scx-manager \
+    scx-tools \
+    scxctl \
+    ananicy-cpp \
+    cachyos-ananicy-rules \
+
+systemctl enable ananicy-cpp
+
+# -----------------------------
+# Boot and system tweaks
+# -----------------------------
+section "Boot and system tweaks"
+systemctl disable NetworkManager-wait-online.service || true
+systemctl set-default graphical.target
+
+
+# -----------------------------
+# Final cleanup
+# -----------------------------
+section "Cleanup unused dependencies"
+
+info "Removing unused packages"
+dnf -y autoremove || true
+
+info "Cleaning package cache"
+dnf -y clean all || true
+
+# Update tweaks
+sed -i 's|^ExecStart=.*|ExecStart=/usr/bin/bootc update --quiet|' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
+sed -i 's|#AutomaticUpdatePolicy.*|AutomaticUpdatePolicy=stage|' /etc/rpm-ostreed.conf
+sed -i 's|#LockLayering.*|LockLayering=true|' /etc/rpm-ostreed.conf
+
+# Enable services
+systemctl preset-all
+systemctl --global preset-all
+
+
+
+echo "%wheel ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-passwordless-sudo
+cat /etc/sudoers.d/90-passwordless-sudo
+chmod 0440 /etc/sudoers.d/90-passwordless-sudo
+
+
+
+rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > packagelist_end.txt
+
+comm -13 packagelist_start.txt packagelist_end.txt || true

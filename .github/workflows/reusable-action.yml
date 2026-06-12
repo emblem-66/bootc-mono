@@ -30,6 +30,9 @@ jobs:
       - name: Free disk space (hastd)
         uses: hastd/free-disk-space@main
 
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+
       - name: Install just
         uses: extractions/setup-just@main
 

@@ -196,24 +196,6 @@ dnf install -y \
 
 systemctl enable ananicy-cpp
 
-# -----------------------------
-# Boot and system tweaks
-# -----------------------------
-section "Boot and system tweaks"
-systemctl disable NetworkManager-wait-online.service || true
-systemctl set-default graphical.target
-
-
-# -----------------------------
-# Final cleanup
-# -----------------------------
-section "Cleanup unused dependencies"
-
-info "Removing unused packages"
-dnf -y autoremove || true
-
-info "Cleaning package cache"
-dnf -y clean all || true
 
 # Update tweaks
 sed -i 's|^ExecStart=.*|ExecStart=/usr/bin/bootc update --quiet|' /usr/lib/systemd/system/bootc-fetch-apply-updates.service

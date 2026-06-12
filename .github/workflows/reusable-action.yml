@@ -66,6 +66,18 @@ jobs:
             --tag "${IMAGE}" \
           | podman load
 
+      - name: Compare layers with previous build
+        run: |
+          set -euo pipefail
+          REMOTE_IMAGE="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
+          LOCAL_IMAGE="${{ inputs.image-name }}:${{ inputs.tag }}"
+          command -v skopeo >/dev/null || (sudo apt-get update && sudo apt-get install -y skopeo)
+          skopeo inspect "docker://${REMOTE_IMAGE}" 2>/dev/null | jq -r '.Layers[]' | sort > old-layers.txt || touch old-layers.txt
+          podman inspect "${LOCAL_IMAGE}" | jq -r '.[0].RootFS.Layers[]' | sort > new-layers.txt
+          TOTAL=$(wc -l < new-layers.txt)
+          CHANGED=$(comm -13 old-layers.txt new-layers.txt | wc -l)
+          echo "Changed layers: $CHANGED / $TOTAL"
+
       - name: Push to GHCR
         uses: redhat-actions/push-to-registry@main
         with:

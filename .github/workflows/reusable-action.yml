@@ -37,7 +37,6 @@ jobs:
         uses: extractions/setup-just@main
 
       - name: Build image (buildah-build)
-        #id: build
         uses: redhat-actions/buildah-build@main
         with:
           image: ${{ inputs.image-name }}

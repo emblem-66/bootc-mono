@@ -1,19 +1,12 @@
 #!/usr/bin/env bash
 set -xeuo pipefail
 
-
 # OPT writable
 #rm -rf /opt && ln -s /var/opt /opt
-
-
-
 
 rpm -qa --qf '%{NAME}\n' | sort
 
 rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > packagelist_start.txt
-
-
-
 
 dnf -y install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release{,-extras,-mesa} 
 #dnf -y install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
@@ -80,7 +73,6 @@ dnf install -y --enablerepo='copr:copr.fedorainfracloud.org:peterwu:rendezvous' 
 
 dnf install -y papirus-icon-theme adw-gtk3-theme 
 
-
 # Brave & Helium
 #dnf config-manager addrepo --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
 #dnf config-manager setopt brave-browser.enabled=0
@@ -95,7 +87,6 @@ dnf install -y papirus-icon-theme adw-gtk3-theme
 #curl -fsSL --create-dirs -o /etc/yum.repos.d/mergerfs.repo \
 #https://raw.githubusercontent.com/emblem-66/bootc-config/refs/heads/main/system_files/etc/yum.repos.d/mergerfs.repo
 #dnf install -y mergerfs
-
 
 dnf install -y greetd tuigreet
 
@@ -114,7 +105,6 @@ dnf install -y \
     mako \
     grim \
     slurp \
-
 
 # File system
 dnf install -y \
@@ -147,7 +137,6 @@ dnf remove -y firefox*
 dnf remove -y toolbox
 dnf install -y distrobox
 
-
 dnf install -y libfreeaptx libldac fdk-aac
 
 # Remove GNOME stuff
@@ -178,13 +167,38 @@ dnf search brave
 dnf install -y steam
 
 # Install the cachyos kernel
+#dnf copr enable -y bieszczaders/kernel-cachyos-lto
+#dnf copr enable -y bieszczaders/kernel-cachyos-addons
+#dnf install -y kernel-cachyos-lto kernel-cachyos-lto-devel-matched
+#setsebool -P domain_kernel_load_modules on
+
+# Enable CachyOS kernel repo (LTO/Clang build)
 dnf copr enable -y bieszczaders/kernel-cachyos-lto
+
+# Enable CachyOS addons repo (ananicy-cpp, scx-scheds, cachyos-settings)
 dnf copr enable -y bieszczaders/kernel-cachyos-addons
+
+# Install CachyOS LTO kernel + matched headers/devel
 dnf install -y kernel-cachyos-lto kernel-cachyos-lto-devel-matched
+
+# Remove stock Fedora kernel
+dnf remove -y kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra || true
+
+# Install ananicy-cpp + cachyos rules, and scx scheduler tools
+dnf install -y  ananicy-cpp cachyos-ananicy-rules scx-scheds scx-manager
+
+# Swap default zram-generator config for cachyos-settings (gaming-tuned sysctls, udev rules)
+dnf swap -y  swap zram-generator-defaults cachyos-settings
+
+# Enable ananicy-cpp service
+systemctl enable ananicy-cpp.service
+
+# SELinux: allow CachyOS kernel to load modules
 setsebool -P domain_kernel_load_modules on
 
-
-
+# Rebuild initramfs for the new kernel at the path bootc expects
+KVER=$(rpm -q --qf '%{version}-%{release}.%{arch}\n' kernel-cachyos-lto | head -1)
+dracut --force --kver "$KVER" "/usr/lib/modules/${KVER}/initramfs.img"
 
 dnf install -y \
     scx-scheds \
@@ -196,7 +210,6 @@ dnf install -y \
 
 systemctl enable ananicy-cpp
 
-
 # Update tweaks
 sed -i 's|^ExecStart=.*|ExecStart=/usr/bin/bootc update --quiet|' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 sed -i 's|#AutomaticUpdatePolicy.*|AutomaticUpdatePolicy=stage|' /etc/rpm-ostreed.conf
@@ -206,13 +219,10 @@ sed -i 's|#LockLayering.*|LockLayering=true|' /etc/rpm-ostreed.conf
 systemctl preset-all
 systemctl --global preset-all
 
-
-
+# Passwordless sudo
 echo "%wheel ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-passwordless-sudo
 cat /etc/sudoers.d/90-passwordless-sudo
 chmod 0440 /etc/sudoers.d/90-passwordless-sudo
-
-
 
 rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > packagelist_end.txt
 

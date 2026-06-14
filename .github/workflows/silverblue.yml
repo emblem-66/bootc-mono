@@ -7,6 +7,9 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/reusable-action.yml
     with:
       image-name: silverblue

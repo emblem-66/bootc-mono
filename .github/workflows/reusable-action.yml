@@ -44,10 +44,10 @@ jobs:
 #          swap-storage: true
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v4
+        uses: sigstore/cosign-installer@main
 
       - name: Install just
-        uses: extractions/setup-just@main
+        uses: extractions/setup-just@v4
 
       - name: Build image (buildah-build)
         uses: redhat-actions/buildah-build@main

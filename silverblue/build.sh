@@ -173,42 +173,42 @@ dnf install -y steam
 #setsebool -P domain_kernel_load_modules on
 
 # Enable CachyOS kernel repo (LTO/Clang build)
-dnf copr enable -y bieszczaders/kernel-cachyos-lto
+#dnf copr enable -y bieszczaders/kernel-cachyos-lto
 
 # Enable CachyOS addons repo (ananicy-cpp, scx-scheds, cachyos-settings)
-dnf copr enable -y bieszczaders/kernel-cachyos-addons
+#dnf copr enable -y bieszczaders/kernel-cachyos-addons
 
 # Install CachyOS LTO kernel + matched headers/devel
-dnf install -y kernel-cachyos-lto kernel-cachyos-lto-devel-matched
+#dnf install -y kernel-cachyos-lto kernel-cachyos-lto-devel-matched
 
 # Remove stock Fedora kernel
-dnf remove -y kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra || true
+#dnf remove -y kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra || true
 
 # Install ananicy-cpp + cachyos rules, and scx scheduler tools
-dnf install -y  ananicy-cpp cachyos-ananicy-rules scx-scheds scx-manager
+#dnf install -y  ananicy-cpp cachyos-ananicy-rules scx-scheds scx-manager
 
 # Swap default zram-generator config for cachyos-settings (gaming-tuned sysctls, udev rules)
-dnf swap -y  swap zram-generator-defaults cachyos-settings
+#dnf swap -y  swap zram-generator-defaults cachyos-settings
 
 # Enable ananicy-cpp service
-systemctl enable ananicy-cpp.service
+#systemctl enable ananicy-cpp.service
 
 # SELinux: allow CachyOS kernel to load modules
-setsebool -P domain_kernel_load_modules on
+#setsebool -P domain_kernel_load_modules on
 
 # Rebuild initramfs for the new kernel at the path bootc expects
-KVER=$(rpm -q --qf '%{version}-%{release}.%{arch}\n' kernel-cachyos-lto | head -1)
-dracut --force --kver "$KVER" "/usr/lib/modules/${KVER}/initramfs.img"
+#KVER=$(rpm -q --qf '%{version}-%{release}.%{arch}\n' kernel-cachyos-lto | head -1)
+#dracut --force --kver "$KVER" "/usr/lib/modules/${KVER}/initramfs.img"
 
-dnf install -y \
-    scx-scheds \
-    scx-manager \
-    scx-tools \
-    scxctl \
-    ananicy-cpp \
-    cachyos-ananicy-rules \
+#dnf install -y \
+#    scx-scheds \
+#    scx-manager \
+#    scx-tools \
+#    scxctl \
+#    ananicy-cpp \
+#    cachyos-ananicy-rules \
 
-systemctl enable ananicy-cpp
+#systemctl enable ananicy-cpp
 
 # Update tweaks
 sed -i 's|^ExecStart=.*|ExecStart=/usr/bin/bootc update --quiet|' /usr/lib/systemd/system/bootc-fetch-apply-updates.service

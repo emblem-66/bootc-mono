@@ -56,11 +56,11 @@ jobs:
           tags: ${{ inputs.tag }}
           containerfiles: ${{ inputs.containerfile }}
 
-      - name: Rechunk (hhd-dev)
-        if: ${{ inputs.rechunk == 'hhd-dev' }}
-        uses: hhd-dev/rechunk@main
-        with:
-          image: ${{ inputs.image-name }}:${{ inputs.tag }}
+    #  - name: Rechunk (hhd-dev)
+    #    if: ${{ inputs.rechunk == 'hhd-dev' }}
+    #    uses: hhd-dev/rechunk@main version
+    #    with:
+    #      image: ${{ inputs.image-name }}:${{ inputs.tag }}
 
       - name: Rechunk (chunkah)
         if: ${{ inputs.rechunk == 'chunkah' }}

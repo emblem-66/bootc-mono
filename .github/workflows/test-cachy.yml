@@ -1,5 +1,5 @@
 ---
-name: Build container image
+name: test-cachy
 on:
   workflow_dispatch:
   schedule:

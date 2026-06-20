@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: "0 0 * * *"
 env:
-  tag: ghcr.io/${{ github.repository_owner }}/silverblue:latest
+  tag: ghcr.io/${{ github.repository_owner }}/silverblue:basic
 jobs: 
   build:
     runs-on: ubuntu-latest

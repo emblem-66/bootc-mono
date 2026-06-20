@@ -1,8 +1,5 @@
 FROM scratch AS ctx
 
-#COPY ../shared/ /shared
-
-#FROM docker.io/archlinux/archlinux:latest AS base
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 
 FROM base AS builder

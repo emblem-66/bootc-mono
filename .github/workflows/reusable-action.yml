@@ -77,8 +77,8 @@ jobs:
 #          --layers \
 #          --compression-format zstd:chunked \
 #          --compression-level 3 \
-#          -f ${{ inputs.containerfile }} \
-#          -t ${{ inputs.image-name }}:${{ inputs.tag }} .
+#          --file ${{ inputs.containerfile }} \
+#          --tag ${{ inputs.image-name }}:${{ inputs.tag }} .
 
 #      - name: Rechunk (hhd-dev)
 #        if: ${{ inputs.rechunk }}

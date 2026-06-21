@@ -8,7 +8,7 @@ on:
     - ".github/workflows/reusable-action.yml"
 
 jobs:
-  build:
+  test:
 #    secrets: inherit
 #    permissions:
 #      contents: read

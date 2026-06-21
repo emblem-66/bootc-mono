@@ -6,7 +6,7 @@ on:
   push:
     paths:
     - ".github/workflows/reusable-action.yml"
-
+    - ".github/workflows/test-workflow.yaml"
 jobs:
   test:
     secrets: inherit

@@ -1,0 +1,24 @@
+name: Cachy Kernel test
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    paths:
+    - ".github/workflows/reusable-action.yml"
+
+jobs:
+  build:
+#    secrets: inherit
+#    permissions:
+#      contents: read
+#      packages: write
+    uses: ./.github/workflows/reusable-action.yml
+    with:
+      image-name: reusable workflow test
+      containerfile: test/Containerfile-reusable-workflow-test
+      tag: latest
+      space: true
+      rechunk: true
+      push: true
+      sign: false

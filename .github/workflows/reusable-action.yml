@@ -98,7 +98,6 @@ jobs:
             -e CHUNKAH_CONFIG_STR \
             quay.io/coreos/chunkah:latest \
             build \
-            --compression-format zstd:chunked \
             --max-layers 128 \
             --prune /sysroot/ \
             --prune /ostree \

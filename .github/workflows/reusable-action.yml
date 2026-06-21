@@ -66,25 +66,44 @@ jobs:
 #        with:
 #          image: ${{ inputs.image-name }}:${{ inputs.tag }}
 
+
+#      - name: Rechunk (chunkah)
+#        id: rechunk
+#        if: ${{ inputs.rechunk }}
+#        run: |
+#          set -xeuo pipefail
+#          IMAGE="${{ inputs.image-name }}:${{ inputs.tag }}"
+#          export CHUNKAH_CONFIG_STR=$(podman inspect "${IMAGE}")
+#          podman run --rm \
+#            --mount=type=image,src="${IMAGE}",target=/chunkah \
+#            -e CHUNKAH_CONFIG_STR \
+#            quay.io/coreos/chunkah:latest \
+#            build \
+#              --compressed \
+#              --max-layers 128 \
+#              --prune /sysroot/ \
+#              --prune /ostree \
+#              --label ostree.commit- --label ostree.final-diffid- \
+#              --tag "${IMAGE}" \
+#          | podman load
+
       - name: Rechunk (chunkah)
         id: rechunk
         if: ${{ inputs.rechunk }}
         run: |
           set -xeuo pipefail
-          IMAGE="${{ inputs.image-name }}:${{ inputs.tag }}"
-          export CHUNKAH_CONFIG_STR=$(podman inspect "${IMAGE}")
-          podman run --rm \
-            --mount=type=image,src="${IMAGE}",target=/chunkah \
-            -e CHUNKAH_CONFIG_STR \
-            quay.io/coreos/chunkah:latest \
+          export CHUNKAH_CONFIG_STR=$(podman inspect "${{ inputs.image-name }}")
+          podman run --rm --mount=type=image,src="${{ inputs.image-name }}",target=/chunkah \
+            -e CHUNKAH_CONFIG_STR quay.io/coreos/chunkah:latest \
             build \
               --compressed \
               --max-layers 128 \
               --prune /sysroot/ \
               --prune /ostree \
-              --label ostree.commit- --label ostree.final-diffid- \
-              --tag "${IMAGE}" \
-          | podman load
+              --label ostree.commit- \
+              --label ostree.final-diffid- \
+              --tag "${{ inputs.image-name }}:${{ inputs.tag }}" | podman load
+
 
 #      - name: Tag Image
 #        if: ${{ inputs.push }}

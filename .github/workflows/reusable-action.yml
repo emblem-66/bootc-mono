@@ -16,6 +16,9 @@ on:
       rechunk:
         required: false
         type: string
+      sign:
+        required: false
+        type: string
 
 jobs:
   build:
@@ -86,6 +89,7 @@ jobs:
 
       - name: Push to GHCR
         id: push
+        if: ${{ inputs.sign == 'true' }}
         uses: redhat-actions/push-to-registry@main
         with:
           image: ${{ inputs.image-name }}

@@ -16,3 +16,5 @@ jobs:
       image-name: silverblue
       containerfile: silverblue/Containerfile
       tag: latest
+      rechunk: true
+      sign: true

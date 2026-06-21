@@ -98,6 +98,8 @@ jobs:
               --label ostree.commit- --label ostree.final-diffid- \
               --tag "${IMAGE}" \
           | podman load
+          podman tag localhost/${{ inputs.image-name }}:{{ inputs.tag }} \
+            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:{{ inputs.tag }}
 
       - name: Push to GHCR
         if: ${{ inputs.push }}

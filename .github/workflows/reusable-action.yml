@@ -33,6 +33,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-26.04
+    secrets: inherit
     permissions:
       contents: read
       packages: write

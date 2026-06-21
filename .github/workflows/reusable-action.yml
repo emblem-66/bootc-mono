@@ -58,15 +58,11 @@ jobs:
 #          docker-images: true
 #          swap-storage: true
 
-      - name: Install Cosign
-        if: ${{ inputs.sign }}
-        uses: sigstore/cosign-installer@main
-
       - name: Install just
         uses: extractions/setup-just@trunk
 
       - name: Build image (buildah-build)
-        #id: build
+        id: build
 #        uses: redhat-actions/buildah-build@main
 #        with:
 #          image: ${{ inputs.image-name }}
@@ -74,8 +70,8 @@ jobs:
 #          containerfiles: ${{ inputs.containerfile }}
         run: |
           podman build \
-          --file ${{ inputs.containerfile }} \
-          --tag ${{ inputs.image-name }}:${{ inputs.tag }} .
+            --file ${{ inputs.containerfile }} \
+            --tag ${{ inputs.image-name }}:${{ inputs.tag }} .
 
 #      - name: Rechunk (hhd-dev)
 #        if: ${{ inputs.rechunk }}
@@ -84,7 +80,7 @@ jobs:
 #          image: ${{ inputs.image-name }}:${{ inputs.tag }}
 
       - name: Rechunk (chunkah)
-        #id: rechunk
+        id: rechunk
         if: ${{ inputs.rechunk }}
         run: |
           set -xeuo pipefail
@@ -95,17 +91,17 @@ jobs:
             -e CHUNKAH_CONFIG_STR \
             quay.io/coreos/chunkah:latest \
             build \
-            --compressed \
-            --max-layers 128 \
-            --prune /sysroot/ \
-            --prune /ostree \
-            --label ostree.commit- --label ostree.final-diffid- \
-            --tag "${IMAGE}" \
+              --compressed \
+              --max-layers 128 \
+              --prune /sysroot/ \
+              --prune /ostree \
+              --label ostree.commit- --label ostree.final-diffid- \
+              --tag "${IMAGE}" \
           | podman load
 
       - name: Push to GHCR
         if: ${{ inputs.push }}
-        #id: push
+        id: push
 #        uses: redhat-actions/push-to-registry@main
 #        with:
 #          image: ${{ inputs.image-name }}
@@ -115,8 +111,12 @@ jobs:
 #          password: ${{ secrets.GITHUB_TOKEN }}
         run: |
           podman push \
-          --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
-          ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}
+            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
+            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}
+
+      - name: Install Cosign
+        if: ${{ inputs.sign }}
+        uses: sigstore/cosign-installer@main
 
       - name: Sign image
         #if: ${{ inputs.sign }}
@@ -125,4 +125,3 @@ jobs:
         run: |
           cosign sign --yes \
             ghcr.io/${{ github.actor }}/${{ inputs.image-name }}@${{ steps.push.outputs.digest }}
-  

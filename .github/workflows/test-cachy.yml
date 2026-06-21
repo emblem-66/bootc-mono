@@ -2,8 +2,8 @@
 name: test-cachy
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * *"
+#  schedule:
+#    - cron: "0 0 * * *"
 
 env:
   IMAGE_DESC: "Experimental CachyOS bootc Image"

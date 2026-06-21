@@ -3,6 +3,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
+  push:
+    branches: ['*']
+    paths-ignore:
+      - '**/README.md'
 env:
   tag: ghcr.io/${{ github.repository_owner }}/cachykernel:latest
 jobs: 

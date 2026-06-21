@@ -74,353 +74,49 @@ rm -rf /boot/*
 
 
 
+# Install the cachyos kernel
+#dnf copr enable -y bieszczaders/kernel-cachyos-lto
+#dnf copr enable -y bieszczaders/kernel-cachyos-addons
+#dnf install -y kernel-cachyos-lto kernel-cachyos-lto-devel-matched
+#setsebool -P domain_kernel_load_modules on
 
+# Enable CachyOS kernel repo (LTO/Clang build)
+#dnf copr enable -y bieszczaders/kernel-cachyos-lto
 
+# Enable CachyOS addons repo (ananicy-cpp, scx-scheds, cachyos-settings)
+#dnf copr enable -y bieszczaders/kernel-cachyos-addons
 
+# Install CachyOS LTO kernel + matched headers/devel
+#dnf install -y kernel-cachyos-lto kernel-cachyos-lto-devel-matched
 
-packages=(
-  # Network / Connectivity
-  NetworkManager
-  NetworkManager-adsl
-  NetworkManager-bluetooth
-  NetworkManager-config-connectivity-fedora
-  NetworkManager-libnm
-  NetworkManager-openconnect
-  NetworkManager-openvpn
-  NetworkManager-strongswan
-  NetworkManager-ssh
-  NetworkManager-ssh-selinux
-  NetworkManager-vpnc
-  NetworkManager-wifi
-  NetworkManager-wwan
-  openconnect
-  spoofdpi
-  vpnc
-  wireguard-tools
-  mobile-broadband-provider-info
-  ifuse
-  jmtpfs
-  gvfs-mtp
-  gvfs-nfs
-  gvfs-smb
-  gvfs-archive
+# Remove stock Fedora kernel
+#dnf remove -y kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra || true
 
-  # Printing / CUPS / Drivers
-  cups
-  cups-pk-helper
-  dymo-cups-drivers
-  gutenprint-cups
-  hplip
-  printer-driver-brlaser
-  ptouch-driver
-  system-config-printer-libs
-  system-config-printer-udev
+# Install ananicy-cpp + cachyos rules, and scx scheduler tools
+#dnf install -y  ananicy-cpp cachyos-ananicy-rules scx-scheds scx-manager
 
-  # Audio / Firmware
-  alsa-firmware
-  alsa-sof-firmware
-  alsa-tools-firmware
-  intel-audio-firmware
-  atheros-firmware
-  brcmfmac-firmware
-  iwlegacy-firmware
-  iwlwifi-dvm-firmware
-  iwlwifi-mvm-firmware
-  realtek-firmware
-  mt7xxx-firmware
-  nxpwireless-firmware
-  tiwilink-firmware
+# Swap default zram-generator config for cachyos-settings (gaming-tuned sysctls, udev rules)
+#dnf swap -y  swap zram-generator-defaults cachyos-settings
 
-  # Security / Authentication
-  audispd-plugins
-  audit
-  fprintd
-  fprintd-pam
-  pam_yubico
-  pcsc-lite
-  firewalld
+# Enable ananicy-cpp service
+#systemctl enable ananicy-cpp.service
 
-  # Containers
-  distrobox
-  systemd-container
+# SELinux: allow CachyOS kernel to load modules
+#setsebool -P domain_kernel_load_modules on
 
-  # Fonts
-  default-fonts
-  default-fonts-core-emoji
-  glibc-all-langpacks
-  google-noto-emoji-fonts
-  google-noto-color-emoji-fonts
-  nerd-fonts
+# Rebuild initramfs for the new kernel at the path bootc expects
+#KVER=$(rpm -q --qf '%{version}-%{release}.%{arch}\n' kernel-cachyos-lto | head -1)
+#dracut --force --kver "$KVER" "/usr/lib/modules/${KVER}/initramfs.img"
 
-  # Performance
-  cachyos-ksm-settings
-  cachyos-settings
-  ksmtuned
-  scxctl
-  scx-manager
-  scx-scheds-git
-  scx-tools-git
-  tuned
-  tuned-ppd
-  thermald
+#dnf install -y \
+#    scx-scheds \
+#    scx-manager \
+#    scx-tools \
+#    scxctl \
+#    ananicy-cpp \
+#    cachyos-ananicy-rules \
 
-  # System / Utilities
-  fuse
-  fuse-common
-  fwupd
-  inotify-tools
-  libcamera
-  libcamera-v4l2
-  libcamera-gstreamer
-  libcamera-tools
-  libimobiledevice
-  libimobiledevice-utils
-  libratbag-ratbagd
-  man-db
-  man-pages
-  plymouth
-  plymouth-system-theme
-  rsync
-  steam-devices
-  switcheroo-control
-  unzip
-  usb_modeswitch
-  uxplay
-  whois
-  xdg-user-dirs
-  xdg-terminal-exec
-
-  # Extra
-  bazaar
-  fastfetch
-  firewall-config
-  flatpak
-  glx-utils
-  tailscale
-  v4l2loopback
-)
-
-dnf5 -y --allowerasing install "${packages[@]}"
-
-# Dependencies for the First Boot Setup
-packages=(
-  niri
-  python3-gobject
-  gtk4
-  gtk4-layer-shell
-  webkitgtk6.0
-)
-
-dnf5 -y install "${packages[@]}" --setopt=install_weak_deps=False
-mv /usr/share/wayland-sessions/niri.desktop /usr/share/wayland-sessions/niri.desktop.disabled
-
-# First Boot Setup GUI
-curl -fsSL https://github.com/Zena-Linux/Zena-Setup/raw/refs/heads/main/zena-setup | install -m 755 /dev/stdin /usr/libexec/zena-setup
-curl -fsSL https://github.com/Zena-Linux/Zena-Setup/raw/refs/heads/main/zena-setup-daemon | install -m 755 /dev/stdin /usr/libexec/zena-setup-daemon
-
-
-
-
-
-system_services=(
-  bootc-fetch-apply-updates.service
-  podman.socket
-  chronyd.service
-  firewalld.service
-  podman-tcp.service
-  zena-setup.service
-  systemd-resolved.service
-  tailscaled.service
-)
-
-user_services=(
-  podman.socket
-  ssh-agent.service
-  gpg-agent.service
-  flathub-setup.service
-)
-
-mask_services=(
-  logrotate.service
-  logrotate.timer
-  akmods-keygen.target
-  rpm-ostree-countme.timer
-  rpm-ostree-countme.service
-  systemd-remount-fs.service
-  flatpak-add-fedora-repos.service
-  NetworkManager-wait-online.service
-  akmods-keygen@akmods-keygen.service
-)
-
-systemctl enable "${system_services[@]}"
-systemctl mask "${mask_services[@]}"
-systemctl --global enable "${user_services[@]}"
-
-preset_file="/usr/lib/systemd/system-preset/01-zena.preset"
-touch "$preset_file"
-
-for service in "${system_services[@]}"; do
-    echo "enable $service" >> "$preset_file"
-done
-
-mkdir -p "/etc/systemd/user-preset/"
-preset_file="/etc/systemd/user-preset/01-zena.preset"
-touch "$preset_file"
-
-for service in "${user_services[@]}"; do
-    echo "enable $service" >> "$preset_file"
-done
-
-systemctl --global preset-all
-
-
-
-
-RELEASE="$(rpm -E %fedora)"
-DATE=$(date +%Y%m%d)
-
-sed -i 's|^ExecStart=.*|ExecStart=/usr/bin/bootc update --quiet|' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
-sed -i 's|#AutomaticUpdatePolicy.*|AutomaticUpdatePolicy=stage|' /etc/rpm-ostreed.conf
-sed -i 's|#LockLayering.*|LockLayering=true|' /etc/rpm-ostreed.conf
-
-install -Dpm0644 -t /usr/share/plymouth/themes/spinner/ /ctx/assets/logos/watermark.png
-
-sed -i '/^[[:space:]]*Defaults[[:space:]]\+timestamp_timeout[[:space:]]*=/d;$a Defaults timestamp_timeout=1' /etc/sudoers
-
-curl -Lo /etc/flatpak/remotes.d/flathub.flatpakrepo https://dl.flathub.org/repo/flathub.flatpakrepo && \
-echo "Default=true" | tee -a /etc/flatpak/remotes.d/flathub.flatpakrepo > /dev/null
-flatpak remote-add --if-not-exists --system flathub /etc/flatpak/remotes.d/flathub.flatpakrepo
-flatpak remote-modify --system --enable flathub
-
-sed -i -f - /usr/lib/os-release <<EOF
-s|^NAME=.*|NAME=\"Zena\"|
-s|^ID=.*|ID=\"zena\"|
-s|^VERSION=.*|VERSION=\"${RELEASE}.${DATE}\"|
-s|^PRETTY_NAME=.*|PRETTY_NAME=\"Zena ${RELEASE}.${DATE}\"|
-s|^LOGO=.*|LOGO=\"cachyos\"|
-s|^HOME_URL=.*|HOME_URL=\"https://github.com/Zena-Linux/Zena\"|
-s|^BUG_REPORT_URL=.*|BUG_REPORT_URL=\"https://github.com/Zena-Linux/Zena/issues\"|
-s|^SUPPORT_URL=.*|SUPPORT_URL=\"https://github.com/Zena-Linux/Zena/issues\"|
-s|^CPE_NAME=\".*\"|CPE_NAME=\"cpe:/o:zena-linux:zena\"|
-s|^DOCUMENTATION_URL=.*|DOCUMENTATION_URL=\"https://github.com/Zena-Linux/Zena\"|
-s|^DEFAULT_HOSTNAME=.*|DEFAULT_HOSTNAME="zena"|
-
-/^REDHAT_BUGZILLA_PRODUCT=/d
-/^REDHAT_BUGZILLA_PRODUCT_VERSION=/d
-/^REDHAT_SUPPORT_PRODUCT=/d
-/^REDHAT_SUPPORT_PRODUCT_VERSION=/d
-EOF
-
-
-
-
-
-
-
-packages=(
-  adw-gtk3-theme
-  alacritty
-  cava
-  danksearch
-  dgop
-  dms
-  dms-greeter
-  glycin-thumbnailer
-  kanshi
-  khal
-  kf6-kimageformats
-  nautilus
-  papirus-icon-theme
-  quickshell
-  xdg-desktop-portal-gtk
-  xdg-desktop-portal-gnome
-  wl-clipboard
-)
-dnf5 -y install "${packages[@]}" --exclude=matugen --exclude=noctalia-qs
-dnf5 -y install nautilus-python matugen --releasever=44 --disablerepo='*copr*'
-
-packages=(
-  gnome-keyring
-  gnome-keyring-pam
-  mangowc
-  pinentry-gnome3
-  zenity
-)
-
-dnf5 -y install "${packages[@]}" --setopt=install_weak_deps=False
-
-XDG_EXT_TMPDIR="$(mktemp -d)"
-curl -fsSLo - "$(curl -fsSL https://api.github.com/repos/tulilirockz/xdg-terminal-exec-nautilus/releases/latest | jq -rc .tarball_url)" | tar -xzvf - -C "${XDG_EXT_TMPDIR}"
-install -Dpm0644 -t "/usr/share/nautilus-python/extensions/" "${XDG_EXT_TMPDIR}"/*/xdg-terminal-exec-nautilus.py
-rm -rf "${XDG_EXT_TMPDIR}"
-
-dconf update
-systemctl set-default graphical.target
-mv /usr/share/wayland-sessions/niri.desktop.disabled /usr/share/wayland-sessions/niri.desktop
-sed -i 's|^Exec=.*|Exec=bash -c "niri-session > /dev/null 2>\&1"|' \
-  /usr/share/wayland-sessions/niri.desktop
-
-sed -i 's|^Exec=.*|Exec=bash -c "mango -s mango-session > /dev/null 2>\&1"|' \
-  /usr/share/wayland-sessions/mango.desktop
-
-
-
-
-system_services=(
-  greetd.service
-  flatpak-theme.service
-)
-
-user_services=(
-  dms.service
-  dms-watch.path
-  dsearch.service
-  wm-setup.service
-  flathub-setup.service
-  gnome-keyring-daemon.socket
-  gnome-keyring-daemon.service
-  dms-greeter-sync-trigger.service
-)
-
-systemctl enable "${system_services[@]}"
-
-preset_file="/usr/lib/systemd/system-preset/01-zena.preset"
-touch "$preset_file"
-
-for service in "${system_services[@]}"; do
-  echo "enable $service" >> "$preset_file"
-done
-
-mkdir -p "/etc/systemd/user-preset/"
-preset_file="/etc/systemd/user-preset/01-zena.preset"
-touch "$preset_file"
-
-for service in "${user_services[@]}"; do
-  echo "enable $service" >> "$preset_file"
-done
-
-systemctl --global preset-all
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#systemctl enable ananicy-cpp
 
 
 

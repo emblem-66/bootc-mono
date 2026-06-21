@@ -200,7 +200,7 @@ packages=(
   v4l2loopback
 )
 
-dnf5 -y install "${packages[@]}"
+dnf5 -y --allowerasing install "${packages[@]}"
 
 # Dependencies for the First Boot Setup
 packages=(

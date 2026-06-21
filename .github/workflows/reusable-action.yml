@@ -75,7 +75,7 @@ jobs:
 
       - name: Rechunk (hhd-dev)
         if: ${{ inputs.rechunk }}
-        uses: hhd-dev/rechunk@main version
+        uses: hhd-dev/rechunk@main
         with:
           image: ${{ inputs.image-name }}:${{ inputs.tag }}
 

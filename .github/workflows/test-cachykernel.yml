@@ -7,18 +7,35 @@ on:
     branches: ['*']
     paths-ignore:
       - '**/README.md'
-env:
-  tag: ghcr.io/${{ github.repository_owner }}/cachykernel:latest
-jobs: 
+#env:
+#  tag: ghcr.io/${{ github.repository_owner }}/cachykernel:latest
+#jobs: 
+#  build:
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+#      packages: write
+#    steps:
+#    - name: Checkout action
+#      uses: actions/checkout@v6
+#    - name: Build image
+#      run: podman build -f test/Containerfile-cachykernel -t ${{ env.tag }} .
+#    - name: Push image
+#      run: podman push --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} ${{ env.tag }}
+
+
+jobs:
   build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-    - name: Checkout action
-      uses: actions/checkout@v6
-    - name: Build image
-      run: podman build -f test/Containerfile-cachykernel -t ${{ env.tag }} .
-    - name: Push image
-      run: podman push --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} ${{ env.tag }}
+#    secrets: inherit
+#    permissions:
+#      contents: read
+#      packages: write
+    uses: ./.github/workflows/reusable-action.yml
+    with:
+      image-name: cachykernel
+      containerfile: test/Containerfile-cachykernel
+      tag: latest
+      space: false
+      rechunk: true
+      push: true
+      sign: true

@@ -128,5 +128,5 @@ jobs:
         if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         run: |
           cosign sign --yes \
-            ghcr.io/${{ inputs.image-name }}@${{ steps.push.outputs.digest }}
+            ghcr.io/${{ github.actor }}/${{ inputs.image-name }}@${{ steps.push.outputs.digest }}
   

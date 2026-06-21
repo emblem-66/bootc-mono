@@ -19,4 +19,4 @@ jobs:
       space: false
       rechunk: true
       push: true
-      sign: true
+      sign: false

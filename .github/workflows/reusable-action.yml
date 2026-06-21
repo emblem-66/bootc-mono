@@ -66,7 +66,7 @@ jobs:
         uses: extractions/setup-just@trunk
 
       - name: Build image (buildah-build)
-        id: build
+        #id: build
 #        uses: redhat-actions/buildah-build@main
 #        with:
 #          image: ${{ inputs.image-name }}
@@ -84,7 +84,7 @@ jobs:
 #          image: ${{ inputs.image-name }}:${{ inputs.tag }}
 
       - name: Rechunk (chunkah)
-        id: rechunk
+        #id: rechunk
         if: ${{ inputs.rechunk }}
         run: |
           set -xeuo pipefail
@@ -105,7 +105,7 @@ jobs:
 
       - name: Push to GHCR
         if: ${{ inputs.push }}
-        id: push
+        #id: push
 #        uses: redhat-actions/push-to-registry@main
 #        with:
 #          image: ${{ inputs.image-name }}

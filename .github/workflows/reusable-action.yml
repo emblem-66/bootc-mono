@@ -20,9 +20,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-#    permissions:
-#      contents: read
-#      packages: write
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     steps:
       - name: Action Checkout
         uses: actions/checkout@main
@@ -50,6 +51,7 @@ jobs:
         uses: extractions/setup-just@v4
 
       - name: Build image (buildah-build)
+        id: build
         uses: redhat-actions/buildah-build@main
         with:
           image: ${{ inputs.image-name }}
@@ -63,6 +65,7 @@ jobs:
     #      image: ${{ inputs.image-name }}:${{ inputs.tag }}
 
       - name: Rechunk (chunkah)
+        id: rechunk
         if: ${{ inputs.rechunk == 'chunkah' }}
         run: |
           set -xeuo pipefail
@@ -82,6 +85,7 @@ jobs:
           | podman load
 
       - name: Push to GHCR
+        id: push
         uses: redhat-actions/push-to-registry@main
         with:
           image: ${{ inputs.image-name }}
@@ -89,3 +93,9 @@ jobs:
           registry: ghcr.io/${{ github.repository_owner }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sign image
+        run: |
+          cosign sign --yes \
+            ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+  

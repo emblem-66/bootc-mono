@@ -160,7 +160,8 @@ packages=(
   scx-manager
   scx-scheds-git
   scx-tools-git
-  power-profiles-daemon
+  tuned
+  tuned-ppd
   thermald
 
   # System / Utilities

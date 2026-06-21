@@ -15,8 +15,8 @@ jobs:
 #      packages: write
     uses: ./.github/workflows/reusable-action.yml
     with:
-      image-name: reusable workflow test
       containerfile: test/Containerfile-reusable-workflow-test
+      image-name: reusable-workflow-test
       tag: latest
       space: true
       rechunk: true

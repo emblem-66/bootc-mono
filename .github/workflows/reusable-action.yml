@@ -101,5 +101,5 @@ jobs:
       - name: Sign image
         run: |
           cosign sign --yes \
-            ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+            ghcr.io/${{ inputs.image-name }}@${{ steps.build.outputs.digest }}
   

@@ -66,7 +66,6 @@ jobs:
 #        with:
 #          image: ${{ inputs.image-name }}:${{ inputs.tag }}
 
-
 #      - name: Rechunk (chunkah)
 #        id: rechunk
 #        if: ${{ inputs.rechunk }}
@@ -105,14 +104,13 @@ jobs:
               --label ostree.final-diffid- \
               --tag "${{ inputs.image-name }}:${{ inputs.tag }}" | podman load
 
-
 #      - name: Tag Image
 #        if: ${{ inputs.push }}
 #        id: tag
 #        run: |
 #          podman tag localhost/${{ inputs.image-name }}:{{ inputs.tag }} \
 #            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:{{ inputs.tag }}
-#
+
       - name: Push to GHCR
         if: ${{ inputs.push }}
         id: push
@@ -127,6 +125,13 @@ jobs:
 #          podman push \
 #            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
 #            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@master
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Cosign
         if: ${{ inputs.sign }}

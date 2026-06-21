@@ -1,4 +1,4 @@
-name: Cachy Kernel test
+name: Test Reusable Workflow
 on:
   workflow_dispatch:
   schedule:

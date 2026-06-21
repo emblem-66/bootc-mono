@@ -9,10 +9,11 @@ on:
 
 jobs:
   test:
-#    secrets: inherit
-#    permissions:
-#      contents: read
-#      packages: write
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     uses: ./.github/workflows/reusable-action.yml
     with:
       containerfile: test/Containerfile-reusable-workflow-test

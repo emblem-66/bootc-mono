@@ -13,12 +13,22 @@ on:
         required: false
         type: string
         default: latest
+      space:
+        required: false
+        type: boolean
+        default: true
       rechunk:
         required: false
-        type: string
+        type: boolean
+        default: false
+      push:
+        required: false
+        type: boolean
+        default: false
       sign:
         required: false
-        type: string
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -35,6 +45,7 @@ jobs:
 #        uses: hastd/free-disk-space@main
 
       - name: Free Disk Space (Ubuntu)
+        if: ${{ inputs.space }}
         uses: jlumbroso/free-disk-space@main
 #        with:
           # this might remove tools that are actually needed if set to "true" but frees about 6 GB
@@ -48,6 +59,7 @@ jobs:
 #          swap-storage: true
 
       - name: Install Cosign
+        if: ${{ inputs.sign }}
         uses: sigstore/cosign-installer@main
 
       - name: Install just
@@ -69,7 +81,7 @@ jobs:
 
       - name: Rechunk (chunkah)
         id: rechunk
-        if: ${{ inputs.rechunk == 'chunkah' }}
+        if: ${{ inputs.rechunk }}
         run: |
           set -xeuo pipefail
           IMAGE="${{ inputs.image-name }}:${{ inputs.tag }}"
@@ -88,8 +100,8 @@ jobs:
           | podman load
 
       - name: Push to GHCR
+        if: ${{ inputs.push }}
         id: push
-        if: ${{ inputs.sign == 'true' }}
         uses: redhat-actions/push-to-registry@main
         with:
           image: ${{ inputs.image-name }}
@@ -99,6 +111,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sign image
+        #if: ${{ inputs.sign }}
+        #if: ${{ inputs.sign && inputs.push }}
+        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         run: |
           cosign sign --yes \
             ghcr.io/${{ inputs.image-name }}@${{ steps.build.outputs.digest }}

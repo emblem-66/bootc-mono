@@ -67,18 +67,15 @@ jobs:
 
       - name: Build image (buildah-build)
         id: build
-        uses: redhat-actions/buildah-build@main
-        with:
-          image: ${{ inputs.image-name }}
-          tags: ${{ inputs.tag }}
-          containerfiles: ${{ inputs.containerfile }}
-#        run: |
-#          podman build \
-#          --layers \
-#          --compression-format zstd:chunked \
-#          --compression-level 3 \
-#          --file ${{ inputs.containerfile }} \
-#          --tag ${{ inputs.image-name }}:${{ inputs.tag }} .
+#        uses: redhat-actions/buildah-build@main
+#        with:
+#          image: ${{ inputs.image-name }}
+#          tags: ${{ inputs.tag }}
+#          containerfiles: ${{ inputs.containerfile }}
+        run: |
+          podman build \
+          --file ${{ inputs.containerfile }} \
+          --tag ${{ inputs.image-name }}:${{ inputs.tag }} .
 
 #      - name: Rechunk (hhd-dev)
 #        if: ${{ inputs.rechunk }}
@@ -109,19 +106,17 @@ jobs:
       - name: Push to GHCR
         if: ${{ inputs.push }}
         id: push
-        uses: redhat-actions/push-to-registry@main
-        with:
-          image: ${{ inputs.image-name }}
-          tags: ${{ inputs.tag }}
-          registry: ghcr.io/${{ github.repository_owner }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          podman push \
-#          --compression-format zstd:chunked \
-#          --compression-level 3 \
-#          --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
-#          ${{ inputs.image-name }}:${{ inputs.tag }}
+#        uses: redhat-actions/push-to-registry@main
+#        with:
+#          image: ${{ inputs.image-name }}
+#          tags: ${{ inputs.tag }}
+#          registry: ghcr.io/${{ github.repository_owner }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          podman push \
+          --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
+          ${{ inputs.image-name }}:${{ inputs.tag }}
   
       - name: Sign image
         #if: ${{ inputs.sign }}

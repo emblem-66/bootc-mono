@@ -16,6 +16,6 @@ jobs:
       containerfile: test/Containerfile-cachykernel
       tag: latest
       space: false
-      rechunk: true
-      push: true
-  #    sign: true
+      rechunk: false
+      push: false
+      sign: false

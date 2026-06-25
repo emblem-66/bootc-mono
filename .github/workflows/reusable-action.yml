@@ -12,7 +12,6 @@ on:
       packages:
         required: true
         type: string
-        default: ./test/workflow-test-packages
       tag:
         required: false
         type: string
@@ -101,6 +100,7 @@ jobs:
             -e CHUNKAH_CONFIG_STR quay.io/coreos/chunkah:latest \
             build \
               --compressed \
+              -compressed zstd:chunked \
               --max-layers 128 \
               --prune /sysroot/ \
               --prune /ostree \
@@ -172,6 +172,7 @@ jobs:
 #            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}
 
       - name: Login to GHCR (docker/login-action)
+        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         uses: docker/login-action@master
         with:
           registry: ghcr.io
@@ -179,13 +180,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Cosign
-        if: ${{ inputs.sign }}
+        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         uses: sigstore/cosign-installer@main
 
       - name: Sign image
-        #if: ${{ inputs.sign }}
-        #if: ${{ inputs.sign && inputs.push }}
         if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         run: |
           cosign sign --yes \
-            ghcr.io/${{ github.actor }}/${{ inputs.image-name }}@${{ steps.push.outputs.digest }}
+            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}@${{ steps.push.outputs.digest }}

@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       packages:
-        required: true
+        required: false
         type: string
       tag:
         required: false

@@ -9,6 +9,10 @@ on:
       containerfile:
         required: true
         type: string
+      packages:
+        required: true
+        type: string
+        default: /test/workflow-test-packages
       tag:
         required: false
         type: string
@@ -121,7 +125,7 @@ jobs:
 
       - name: Verify packages
         run: |
-          PKG_FILE="common/packages"
+          PKG_FILE=${{ inputs.packages }}
           
           if [ ! -f "$PKG_FILE" ]; then
             echo "No package list found at $PKG_FILE, skipping"

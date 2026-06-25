@@ -118,6 +118,40 @@ jobs:
             localhost/${{ inputs.image-name }}:${{ inputs.tag }} \
             bootc --help
 
+
+      - name: Verify packages
+        run: |
+          PKG_FILE="common/packages"
+          
+          if [ ! -f "$PKG_FILE" ]; then
+            echo "No package list found at $PKG_FILE, skipping"
+            exit 0
+          fi
+      
+          MISSING=$(podman run --rm \
+            -v "$(pwd)/${PKG_FILE}:/pkg-list.txt:ro" \
+            localhost/${{ inputs.image-name }}:${{ inputs.tag }} \
+            bash -c '
+              MISSING=()
+              while IFS= read -r pkg || [[ -n "$pkg" ]]; do
+                [[ "$pkg" =~ ^[[:space:]]*# ]] && continue
+                [[ -z "${pkg// }" ]] && continue
+                rpm -q "$pkg" &>/dev/null || MISSING+=("$pkg")
+              done < /pkg-list.txt
+              printf "%s\n" "${MISSING[@]}"
+            ')
+      
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing packages:"
+            echo "$MISSING" | while read -r pkg; do
+              echo "::error::  - $pkg"
+            done
+            exit 1
+          fi
+      
+          echo "All packages verified"
+
+
       - name: Push to GHCR (redhat-actions/push-to-registry)
         if: ${{ inputs.push }}
         id: push

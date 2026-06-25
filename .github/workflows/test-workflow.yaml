@@ -1,8 +1,8 @@
 name: Test Reusable Workflow
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * *"
+#  schedule:
+#    - cron: "0 0 * * *"
   push:
     paths:
     - ".github/workflows/reusable-action.yml"
@@ -10,10 +10,10 @@ on:
 jobs:
   test:
     secrets: inherit
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
+#    permissions:
+#      contents: read
+#      packages: write
+#      id-token: write
     uses: ./.github/workflows/reusable-action.yml
     with:
       containerfile: test/Containerfile-reusable-workflow-test

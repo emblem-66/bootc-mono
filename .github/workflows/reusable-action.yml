@@ -12,7 +12,7 @@ on:
       packages:
         required: true
         type: string
-        default: /test/workflow-test-packages
+        default: ./test/workflow-test-packages
       tag:
         required: false
         type: string

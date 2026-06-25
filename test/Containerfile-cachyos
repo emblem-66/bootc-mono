@@ -62,6 +62,6 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     printf "d /var/roothome 0700 root root -\nd /run/media 0755 root root -" | tee -a "/usr/lib/tmpfiles.d/bootc-base-dirs.conf" && \
     printf '[composefs]\nenabled = yes\n[sysroot]\nreadonly = true\n' | tee "/usr/lib/ostree/prepare-root.conf"
 
-LABEL containers.bootc 1
+CMD ["/sbin/init"]
 
 RUN bootc container lint

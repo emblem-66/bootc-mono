@@ -99,7 +99,7 @@ jobs:
           podman run --rm --mount=type=image,src="${{ inputs.image-name }}",target=/chunkah \
             -e CHUNKAH_CONFIG_STR quay.io/coreos/chunkah:latest \
             build \
-              --compressed zstd:chunked \
+              --compressed \
               --max-layers 128 \
               --prune /sysroot/ \
               --prune /ostree \

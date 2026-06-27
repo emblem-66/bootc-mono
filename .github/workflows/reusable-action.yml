@@ -51,17 +51,32 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@trunk
 
-      - name: Build image (redhat-actions/buildah-build)
-        id: build
-        uses: redhat-actions/buildah-build@main
-        with:
-          image: ${{ inputs.image-name }}
-          tags: ${{ inputs.tag }}
-          containerfiles: ${{ inputs.containerfile }}
+#      - name: Build image (redhat-actions/buildah-build)
+#        id: build
+#        uses: redhat-actions/buildah-build@main
+#        with:
+#          image: ${{ inputs.image-name }}
+#          tags: ${{ inputs.tag }}
+#          containerfiles: ${{ inputs.containerfile }}
 #        run: |
 #          podman build \
 #            --file ${{ inputs.containerfile }} \
 #            --tag ${{ inputs.image-name }}:${{ inputs.tag }} .
+
+      - name: Pull previous image
+        if: ${{ inputs.push }}
+        run: |
+          podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" || true
+
+      - name: Build image (podman)
+        id: build
+        run: |
+          podman build \
+            --pull \
+            --cache-from ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }} \
+            --file ${{ inputs.containerfile }} \
+            --tag "localhost/${{ inputs.image-name }}:${{ inputs.tag }}" .
+
 
 #      - name: Rechunk (hhd-dev)
 #        if: ${{ inputs.rechunk }}
@@ -95,8 +110,8 @@ jobs:
         if: ${{ inputs.rechunk }}
         run: |
           set -xeuo pipefail
-          export CHUNKAH_CONFIG_STR=$(podman inspect "${{ inputs.image-name }}")
-          podman run --rm --mount=type=image,src="${{ inputs.image-name }}",target=/chunkah \
+          export CHUNKAH_CONFIG_STR=$(podman inspect "localhost/${{ inputs.image-name }}:${{ inputs.tag }}")
+          podman run --rm --mount=type=image,src="localhost/${{ inputs.image-name }}:${{ inputs.tag }}",target=/chunkah \
             -e CHUNKAH_CONFIG_STR quay.io/coreos/chunkah:latest \
             build \
               --compressed \
@@ -105,7 +120,9 @@ jobs:
               --prune /ostree \
               --label ostree.commit- \
               --label ostree.final-diffid- \
-              --tag "${{ inputs.image-name }}:${{ inputs.tag }}" | podman load
+              --tag "localhost/${{ inputs.image-name }}:${{ inputs.tag }}" \
+            | podman load
+
 
 #      - name: Tag Image
 #        if: ${{ inputs.push }}
@@ -114,13 +131,11 @@ jobs:
 #          podman tag localhost/${{ inputs.image-name }}:{{ inputs.tag }} \
 #            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:{{ inputs.tag }}
 
-
       - name: Smoke test
         run: |
           podman run --rm \
             localhost/${{ inputs.image-name }}:${{ inputs.tag }} \
             bootc --help
-
 
       - name: Verify packages
         run: |
@@ -155,28 +170,46 @@ jobs:
           echo "All packages verified"
 
 
-      - name: Push to GHCR (redhat-actions/push-to-registry)
-        if: ${{ inputs.push }}
-        id: push
-        uses: redhat-actions/push-to-registry@main
-        with:
-          image: ${{ inputs.image-name }}
-          tags: ${{ inputs.tag }}
-          registry: ghcr.io/${{ github.repository_owner }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Push to GHCR (redhat-actions/push-to-registry)
+#        if: ${{ inputs.push }}
+#        id: push
+#        uses: redhat-actions/push-to-registry@main
+#        with:
+#          image: ${{ inputs.image-name }}
+#          tags: ${{ inputs.tag }}
+#          registry: ghcr.io/${{ github.repository_owner }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
 #        run: |
 #          podman push \
 #            --creds=${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
 #            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}
 
-      - name: Login to GHCR (docker/login-action)
-        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
-        uses: docker/login-action@master
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push to GHCR (podman)
+        if: ${{ inputs.push }}
+        id: push
+        run: |
+          podman push \
+            --compression-format zstd:chunked \
+            --compression-level 19 \
+            --creds="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+            "localhost/${{ inputs.image-name }}:${{ inputs.tag }}" \
+            "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
+
+          DIGEST=$(podman inspect \
+            --format '{{index .RepoDigests 0}}' \
+            "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
+            | cut -d@ -f2)
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+
+#      - name: Login to GHCR (docker/login-action)
+        #if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
+#        if: ${{ inputs.sign && inputs.push }}
+#        uses: docker/login-action@master
+#        with:
+#          registry: ghcr.io
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Cosign
         if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
@@ -185,5 +218,12 @@ jobs:
       - name: Sign image
         if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         run: |
-          cosign sign --yes \
-            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}@${{ steps.push.outputs.digest }}
+            cosign login ghcr.io \
+              --username "${{ github.actor }}" \
+              --password "${{ secrets.GITHUB_TOKEN }}"
+            cosign sign --yes \
+              "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}@${{ steps.push.outputs.digest }}"
+#        run: |
+#          cosign sign --yes \
+#            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}@${{ steps.push.outputs.digest }}
+              

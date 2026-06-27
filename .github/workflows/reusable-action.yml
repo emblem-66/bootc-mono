@@ -73,7 +73,7 @@ jobs:
         run: |
           podman build \
             --pull \
-            --cache-from ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }} \
+            --cache-from ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }} \
             --file ${{ inputs.containerfile }} \
             --tag "localhost/${{ inputs.image-name }}:${{ inputs.tag }}" .
 

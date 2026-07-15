@@ -164,6 +164,8 @@ dnf search winboat
 
 dnf search brave
 
+dnf install -y syncthing
+
 dnf install -y steam
 
 # Install the cachyos kernel

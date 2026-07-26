@@ -1,0 +1,18 @@
+FROM docker.io/cachyos/cachyos-v3:latest
+
+pacman -Syu --noconfirm
+
+pkgs=(
+  cachyos-gaming-meta
+  cachyos-gaming-applications
+  steam
+  heroic-games-launcher
+  faugus-launcher
+  prismlauncher
+  umu-launcher
+  goverlay
+  protonup-qt
+  protonplus
+)
+
+pacman -S --noconfirm "${pkgs[@]}"

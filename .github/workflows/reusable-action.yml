@@ -63,10 +63,22 @@ jobs:
 #            --file ${{ inputs.containerfile }} \
 #            --tag ${{ inputs.image-name }}:${{ inputs.tag }} .
 
+#      - name: Pull previous image
+#        if: ${{ inputs.push }}
+#        run: |
+#          podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" || true
+
       - name: Pull previous image
         if: ${{ inputs.push }}
         run: |
           podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" || true
+          # Preserve it under a separate tag for delta comparison later
+          podman tag \
+            "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
+            "localhost/${{ inputs.image-name }}-prev:${{ inputs.tag }}" 2>/dev/null || true
+
+
+
 
       - name: Build image (podman)
         id: build
@@ -122,6 +134,40 @@ jobs:
               --label ostree.final-diffid- \
               --tag "localhost/${{ inputs.image-name }}:${{ inputs.tag }}" \
             | podman load
+
+      - name: Verify rechunk
+        if: ${{ inputs.rechunk }}
+        run: |
+          set -euo pipefail
+          IMAGE="localhost/${{ inputs.image-name }}:${{ inputs.tag }}"
+
+          # Layer count
+          LAYER_COUNT=$(skopeo inspect --raw containers-storage:"${IMAGE}" \
+            | jq '.layers | length')
+          echo "Layer count: ${LAYER_COUNT}"
+          if [ "${LAYER_COUNT}" -gt 128 ]; then
+            echo "::error::Rechunk failed: ${LAYER_COUNT} layers exceed --max-layers 128"
+            exit 1
+          fi
+
+          # zstd:chunked media type on all layers
+          BAD=$(skopeo inspect --raw containers-storage:"${IMAGE}" \
+            | jq -r '.layers[] | select(.mediaType != "application/vnd.oci.image.layer.v1.tar+zstd") | .digest')
+          if [ -n "${BAD}" ]; then
+            echo "::error::Non-zstd:chunked layers found:"
+            echo "${BAD}"
+            exit 1
+          fi
+
+          # chunked index annotation present on at least one layer
+          CHUNKED=$(skopeo inspect --raw containers-storage:"${IMAGE}" \
+            | jq '[.layers[] | select(.annotations | keys | any(startswith("io.github.containers.zstd-chunked")))] | length')
+          echo "Layers with zstd:chunked annotations: ${CHUNKED}"
+          if [ "${CHUNKED}" -eq 0 ]; then
+            echo "::warning::No zstd:chunked annotations found — partial pulls may not work"
+          fi
+
+          echo "Rechunk verified: ${LAYER_COUNT} layers, all zstd:chunked"
 
 
 #      - name: Tag Image
@@ -210,6 +256,61 @@ jobs:
 #          registry: ghcr.io
 #          username: ${{ github.actor }}
 #          password: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+
+
+      - name: Check layer delta vs previous
+        if: ${{ inputs.push }}
+        run: |
+          set -euo pipefail
+          REF="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
+          CREDS="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+
+          # Current (just pushed)
+          NEW=$(skopeo inspect --raw --creds="${CREDS}" "docker://${REF}" \
+            | jq -r '[.layers[].digest] | sort | .[]')
+
+          # Previous — pull from the digest we pulled at the start of the job
+          # (the "Pull previous image" step already pulled it as a side effect)
+          PREV_REF="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
+          PREV=$(skopeo inspect --raw \
+            containers-storage:"localhost/${{ inputs.image-name }}-prev:${{ inputs.tag }}" \
+            2>/dev/null \
+            | jq -r '[.layers[].digest] | sort | .[]') || PREV=""
+
+          if [ -z "${PREV}" ]; then
+            echo "No previous image to diff against — skipping delta check"
+            exit 0
+          fi
+
+          ADDED=$(comm -23 <(echo "${NEW}") <(echo "${PREV}") | wc -l)
+          REMOVED=$(comm -13 <(echo "${NEW}") <(echo "${PREV}") | wc -l)
+          TOTAL=$(echo "${NEW}" | wc -l)
+
+          echo "### Layer delta vs previous" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Total layers | ${TOTAL} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Changed (added) | ${ADDED} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Removed | ${REMOVED} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Unchanged | $((TOTAL - ADDED)) |" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${ADDED}" -eq "${TOTAL}" ]; then
+            echo "::warning::All layers changed — bootc upgrade will download the full image. Rechunking may not be helping."
+          else
+            echo "bootc upgrade would download ~${ADDED}/${TOTAL} layers"
+          fi
+
+
+
+
+
+
+
+
+
 
       - name: Install Cosign
         if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}

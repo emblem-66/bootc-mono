@@ -144,17 +144,19 @@ jobs:
           set -euo pipefail
           IMAGE="localhost/${{ inputs.image-name }}:${{ inputs.tag }}"
 
-          # Layer count via podman
-          LAYER_COUNT=$(podman image inspect "${IMAGE}" \
-            | jq '.[0].RootFS.Layers | length')
+          RAW=$(podman run --rm \
+            -v /var/lib/containers/storage:/var/lib/containers/storage:ro \
+            --net=none \
+            quay.io/skopeo/stable:latest \
+            inspect --raw \
+            containers-storage:"${IMAGE}")
+
+          LAYER_COUNT=$(echo "${RAW}" | jq '.layers | length')
           echo "Layer count: ${LAYER_COUNT}"
           if [ "${LAYER_COUNT}" -gt 128 ]; then
             echo "::error::Rechunk failed: ${LAYER_COUNT} layers exceed --max-layers 128"
             exit 1
           fi
-
-          # Check manifest annotations via skopeo using docker-daemon transport
-          RAW=$(podman image save "${IMAGE}" | skopeo inspect --raw docker-archive:/dev/stdin)
 
           BAD=$(echo "${RAW}" \
             | jq -r '.layers[] | select(.mediaType != "application/vnd.oci.image.layer.v1.tar+zstd") | .digest')

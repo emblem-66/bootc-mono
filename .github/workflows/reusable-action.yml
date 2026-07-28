@@ -142,10 +142,12 @@ jobs:
         if: ${{ inputs.rechunk }}
         run: |
           set -euo pipefail
+
+          skopeo --version
+          
           IMAGE="localhost/${{ inputs.image-name }}:${{ inputs.tag }}"
 
           RAW=$(skopeo inspect --raw \
-            --storage-driver overlay \
             --storage-opt "graphRoot=${HOME}/.local/share/containers/storage" \
             containers-storage:"${IMAGE}")
 

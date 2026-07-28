@@ -135,23 +135,28 @@ jobs:
               --tag "localhost/${{ inputs.image-name }}:${{ inputs.tag }}" \
             | podman load
 
+
+
+
       - name: Verify rechunk
         if: ${{ inputs.rechunk }}
         run: |
           set -euo pipefail
           IMAGE="localhost/${{ inputs.image-name }}:${{ inputs.tag }}"
 
-          # Layer count
-          LAYER_COUNT=$(skopeo inspect --raw containers-storage:"${IMAGE}" \
-            | jq '.layers | length')
+          # Layer count via podman
+          LAYER_COUNT=$(podman image inspect "${IMAGE}" \
+            | jq '.[0].RootFS.Layers | length')
           echo "Layer count: ${LAYER_COUNT}"
           if [ "${LAYER_COUNT}" -gt 128 ]; then
             echo "::error::Rechunk failed: ${LAYER_COUNT} layers exceed --max-layers 128"
             exit 1
           fi
 
-          # zstd:chunked media type on all layers
-          BAD=$(skopeo inspect --raw containers-storage:"${IMAGE}" \
+          # Check manifest annotations via skopeo using docker-daemon transport
+          RAW=$(podman image save "${IMAGE}" | skopeo inspect --raw docker-archive:/dev/stdin)
+
+          BAD=$(echo "${RAW}" \
             | jq -r '.layers[] | select(.mediaType != "application/vnd.oci.image.layer.v1.tar+zstd") | .digest')
           if [ -n "${BAD}" ]; then
             echo "::error::Non-zstd:chunked layers found:"
@@ -159,9 +164,8 @@ jobs:
             exit 1
           fi
 
-          # chunked index annotation present on at least one layer
-          CHUNKED=$(skopeo inspect --raw containers-storage:"${IMAGE}" \
-            | jq '[.layers[] | select(.annotations | keys | any(startswith("io.github.containers.zstd-chunked")))] | length')
+          CHUNKED=$(echo "${RAW}" \
+            | jq '[.layers[] | select(.annotations // {} | keys | any(startswith("io.github.containers.zstd-chunked")))] | length')
           echo "Layers with zstd:chunked annotations: ${CHUNKED}"
           if [ "${CHUNKED}" -eq 0 ]; then
             echo "::warning::No zstd:chunked annotations found — partial pulls may not work"

@@ -166,7 +166,7 @@ dnf search brave
 
 dnf install -y syncthing
 
-dnf install -y steam
+#dnf install -y steam
 
 # Install the cachyos kernel
 #dnf copr enable -y bieszczaders/kernel-cachyos-lto

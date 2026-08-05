@@ -68,17 +68,17 @@ jobs:
 #        run: |
 #          podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" || true
 
+      
+
+
       - name: Pull previous image
         if: ${{ inputs.push }}
         run: |
           podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" || true
-          # Preserve it under a separate tag for delta comparison later
-          podman tag \
-            "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
-            "localhost/${{ inputs.image-name }}-prev:${{ inputs.tag }}" 2>/dev/null || true
-
-
-
+          skopeo inspect --raw \
+            --creds="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+            "docker://ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
+            | jq -r '[.layers[].digest] | sort | .[]' > /tmp/prev-layers.txt 2>/dev/null || true
 
       - name: Build image (podman)
         id: build
@@ -278,11 +278,9 @@ jobs:
 
           # Previous — pull from the digest we pulled at the start of the job
           # (the "Pull previous image" step already pulled it as a side effect)
-          PREV_REF="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
-          PREV=$(skopeo inspect --raw \
-            containers-storage:"localhost/${{ inputs.image-name }}-prev:${{ inputs.tag }}" \
-            2>/dev/null \
-            | jq -r '[.layers[].digest] | sort | .[]') || PREV=""
+          
+          PREV=$(cat /tmp/prev-layers.txt 2>/dev/null) || PREV=""
+
 
           if [ -z "${PREV}" ]; then
             echo "No previous image to diff against — skipping delta check"

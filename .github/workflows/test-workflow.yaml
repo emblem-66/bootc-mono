@@ -20,8 +20,4 @@ jobs:
       image-name: test-reusable-workflow
       tag: latest
       packages: ./test/workflow-test-packages
-      space: true
-      rechunk: true
-      push: true
-      sign: true
       force-build: true

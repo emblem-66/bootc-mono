@@ -203,9 +203,18 @@ jobs:
 
       - name: Smoke test
         run: |
-          podman run --rm \
-            localhost/${{ inputs.image-name }}:${{ inputs.tag }} \
+          podman run --rm "${IMAGE}" bash -c '
             bootc --help
+            uname -r
+            systemctl --version
+            ostree --version
+            flatpak-version
+            podman --version
+            docker --version
+          '
+
+
+
 
       - name: Verify packages
         run: |

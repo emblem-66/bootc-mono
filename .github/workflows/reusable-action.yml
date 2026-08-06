@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@main
 
       - name: Free Disk Space (Ubuntu)
-        if: ${{ inputs.space }}
+#        if: ${{ inputs.space }}
         uses: jlumbroso/free-disk-space@main
 
 #      - name: Install just
@@ -156,7 +156,7 @@ jobs:
 
       - name: Rechunk (chunkah)
         id: rechunk
-        if: ${{ inputs.rechunk }}
+#        if: ${{ inputs.rechunk }}
         run: |
           set -xeuo pipefail
           export CHUNKAH_CONFIG_STR=$(podman inspect "localhost/${{ inputs.image-name }}:${{ inputs.tag }}")
@@ -176,7 +176,7 @@ jobs:
 
 
       - name: Verify rechunk
-        if: ${{ inputs.rechunk && inputs.push }}
+#        if: ${{ inputs.rechunk && inputs.push }}
         run: |
           set -euo pipefail
           REF="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
@@ -273,7 +273,7 @@ jobs:
 #            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}
 
       - name: Push to GHCR (podman)
-        if: ${{ inputs.push }}
+#        if: ${{ inputs.push }}
         id: push
         run: |
           podman push \
@@ -352,11 +352,11 @@ jobs:
 
 
       - name: Install Cosign
-        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
+#        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         uses: sigstore/cosign-installer@main
 
       - name: Sign image
-        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
+#        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         run: |
             cosign login ghcr.io \
               --username "${{ github.actor }}" \

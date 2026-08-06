@@ -32,6 +32,10 @@ on:
         required: false
         type: boolean
         default: false
+      force-build:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   image:
@@ -114,6 +118,7 @@ jobs:
 
       - name: Build image (podman)
         id: build
+        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
         run: |
           podman build \
             --pull \

@@ -16,22 +16,6 @@ on:
         required: false
         type: string
         default: latest
-      space:
-        required: false
-        type: boolean
-        default: true
-      rechunk:
-        required: false
-        type: boolean
-        default: false
-      push:
-        required: false
-        type: boolean
-        default: false
-      sign:
-        required: false
-        type: boolean
-        default: false
       force-build:
         required: false
         type: boolean
@@ -49,7 +33,6 @@ jobs:
         uses: actions/checkout@main
 
       - name: Free Disk Space (Ubuntu)
-#        if: ${{ inputs.space }}
         uses: jlumbroso/free-disk-space@main
 
 #      - name: Install just

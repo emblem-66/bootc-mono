@@ -71,14 +71,14 @@ jobs:
       
 
 
-      - name: Pull previous image
-        if: ${{ inputs.push }}
-        run: |
-          podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" || true
-          skopeo inspect --raw \
-            --creds="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
-            "docker://ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
-            | jq -r '[.layers[].digest] | sort | .[]' > /tmp/prev-layers.txt 2>/dev/null || true
+#      - name: Pull previous image
+#        if: ${{ inputs.push }}
+#        run: |
+#          podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" || true
+#          skopeo inspect --raw \
+#            --creds="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+#            "docker://ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
+#            | jq -r '[.layers[].digest] | sort | .[]' > /tmp/prev-layers.txt 2>/dev/null || true
 
       - name: Build image (podman)
         id: build
@@ -265,45 +265,45 @@ jobs:
 
 
 
-      - name: Check layer delta vs previous
-        if: ${{ inputs.push }}
-        run: |
-          set -euo pipefail
-          REF="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
-          CREDS="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+ #     - name: Check layer delta vs previous
+#        if: ${{ inputs.push }}
+#        run: |
+#          set -euo pipefail
+#          REF="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
+#          CREDS="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
 
-          # Current (just pushed)
-          NEW=$(skopeo inspect --raw --creds="${CREDS}" "docker://${REF}" \
-            | jq -r '[.layers[].digest] | sort | .[]')
+#          # Current (just pushed)
+#          NEW=$(skopeo inspect --raw --creds="${CREDS}" "docker://${REF}" \
+#            | jq -r '[.layers[].digest] | sort | .[]')
 
           # Previous — pull from the digest we pulled at the start of the job
           # (the "Pull previous image" step already pulled it as a side effect)
-          
-          PREV=$(cat /tmp/prev-layers.txt 2>/dev/null) || PREV=""
+#          
+#          PREV=$(cat /tmp/prev-layers.txt 2>/dev/null) || PREV=""
 
 
-          if [ -z "${PREV}" ]; then
-            echo "No previous image to diff against — skipping delta check"
-            exit 0
-          fi
+ #         if [ -z "${PREV}" ]; then
+ #           echo "No previous image to diff against — skipping delta check"
+ #           exit 0
+#          fi
 
-          ADDED=$(comm -23 <(echo "${NEW}") <(echo "${PREV}") | wc -l)
-          REMOVED=$(comm -13 <(echo "${NEW}") <(echo "${PREV}") | wc -l)
-          TOTAL=$(echo "${NEW}" | wc -l)
+ #         ADDED=$(comm -23 <(echo "${NEW}") <(echo "${PREV}") | wc -l)
+#          REMOVED=$(comm -13 <(echo "${NEW}") <(echo "${PREV}") | wc -l)
+#          TOTAL=$(echo "${NEW}" | wc -l)
 
-          echo "### Layer delta vs previous" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Total layers | ${TOTAL} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Changed (added) | ${ADDED} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Removed | ${REMOVED} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Unchanged | $((TOTAL - ADDED)) |" >> "$GITHUB_STEP_SUMMARY"
+#          echo "### Layer delta vs previous" >> "$GITHUB_STEP_SUMMARY"
+#          echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
+#          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+#          echo "| Total layers | ${TOTAL} |" >> "$GITHUB_STEP_SUMMARY"
+#          echo "| Changed (added) | ${ADDED} |" >> "$GITHUB_STEP_SUMMARY"
+#          echo "| Removed | ${REMOVED} |" >> "$GITHUB_STEP_SUMMARY"
+#          echo "| Unchanged | $((TOTAL - ADDED)) |" >> "$GITHUB_STEP_SUMMARY"
 
-          if [ "${ADDED}" -eq "${TOTAL}" ]; then
-            echo "::warning::All layers changed — bootc upgrade will download the full image. Rechunking may not be helping."
-          else
-            echo "bootc upgrade would download ~${ADDED}/${TOTAL} layers"
-          fi
+#          if [ "${ADDED}" -eq "${TOTAL}" ]; then
+#            echo "::warning::All layers changed — bootc upgrade will download the full image. Rechunking may not be helping."
+#          else
+#            echo "bootc upgrade would download ~${ADDED}/${TOTAL} layers"
+#          fi
 
 
 

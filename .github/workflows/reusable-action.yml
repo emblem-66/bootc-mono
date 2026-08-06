@@ -69,7 +69,39 @@ jobs:
 #          podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" || true
 
       
+      - name: Check for updates
+        id: updates
+        run: |
+          set -euo pipefail
 
+          if ! podman pull "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" 2>/dev/null; then
+            echo "No previous image found — building fresh"
+            echo "has_updates=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Extract installed packages from previous image
+          podman run --rm \
+            "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
+            rpm -qa --queryformat '%{NAME} %{VERSION}-%{RELEASE}.%{ARCH}\n' | sort > /tmp/prev-packages.txt
+
+          # Check updates using base image with fresh repo metadata
+          # against the installed package list from the previous built image
+          UPDATE_COUNT=$(podman run --rm \
+            -v /tmp/prev-packages.txt:/tmp/prev-packages.txt:ro \
+            "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
+            bash -c '
+              dnf check-update --refresh -q 2>/dev/null | grep -v "^$" | wc -l
+            ')
+
+          echo "Packages with updates: ${UPDATE_COUNT}"
+
+          if [ "${UPDATE_COUNT}" -gt 0 ]; then
+            echo "has_updates=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No updates available — skipping build"
+            echo "has_updates=false" >> "$GITHUB_OUTPUT"
+          fi
 
 #      - name: Pull previous image
 #        if: ${{ inputs.push }}

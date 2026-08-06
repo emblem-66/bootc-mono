@@ -48,8 +48,8 @@ jobs:
         if: ${{ inputs.space }}
         uses: jlumbroso/free-disk-space@main
 
-      - name: Install just
-        uses: extractions/setup-just@trunk
+#      - name: Install just
+#        uses: extractions/setup-just@trunk
 
 #      - name: Build image (redhat-actions/buildah-build)
 #        id: build

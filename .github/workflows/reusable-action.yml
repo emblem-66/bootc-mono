@@ -139,6 +139,7 @@ jobs:
 
       - name: Rechunk (chunkah)
         id: rechunk
+        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
 #        if: ${{ inputs.rechunk }}
         run: |
           set -xeuo pipefail
@@ -159,6 +160,7 @@ jobs:
 
 
       - name: Verify rechunk
+        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
 #        if: ${{ inputs.rechunk && inputs.push }}
         run: |
           set -euo pipefail
@@ -203,6 +205,7 @@ jobs:
 
 
       - name: Smoke test
+        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
         run: |
           IMAGE="localhost/${{ inputs.image-name }}:${{ inputs.tag }}"
           podman run --rm "${IMAGE}" bash -c '
@@ -217,6 +220,7 @@ jobs:
 
 
       - name: Verify packages
+        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
         run: |
           PKG_FILE=${{ inputs.packages }}
           
@@ -265,6 +269,7 @@ jobs:
 #            ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}
 
       - name: Push to GHCR (podman)
+        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
 #        if: ${{ inputs.push }}
         id: push
         run: |
@@ -354,10 +359,12 @@ jobs:
 
 
       - name: Install Cosign
+        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
 #        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         uses: sigstore/cosign-installer@main
 
       - name: Sign image
+        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
 #        if: ${{ inputs.sign && inputs.push && steps.push.outcome == 'success' }}
         run: |
             cosign login ghcr.io \

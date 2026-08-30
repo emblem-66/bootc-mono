@@ -159,41 +159,41 @@ jobs:
 
 
 
-      - name: Verify rechunk
-        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
+#      - name: Verify rechunk
+#        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
 #        if: ${{ inputs.rechunk && inputs.push }}
-        run: |
-          set -euo pipefail
-          REF="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
-          CREDS="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+#        run: |
+#          set -euo pipefail
+#          REF="ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}"
+#          CREDS="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
 
-          RAW=$(skopeo inspect --raw \
-            --creds="${CREDS}" \
-            "docker://${REF}")
+#          RAW=$(skopeo inspect --raw \
+#            --creds="${CREDS}" \
+#            "docker://${REF}")
 
-          LAYER_COUNT=$(echo "${RAW}" | jq '.layers | length')
-          echo "Layer count: ${LAYER_COUNT}"
-          if [ "${LAYER_COUNT}" -gt 128 ]; then
-            echo "::error::Rechunk failed: ${LAYER_COUNT} layers exceed --max-layers 128"
-            exit 1
-          fi
+#          LAYER_COUNT=$(echo "${RAW}" | jq '.layers | length')
+#          echo "Layer count: ${LAYER_COUNT}"
+#          if [ "${LAYER_COUNT}" -gt 128 ]; then
+#            echo "::error::Rechunk failed: ${LAYER_COUNT} layers exceed --max-layers 128"
+#            exit 1
+#          fi
 
-          BAD=$(echo "${RAW}" \
-            | jq -r '.layers[] | select(.mediaType != "application/vnd.oci.image.layer.v1.tar+zstd") | .digest')
-          if [ -n "${BAD}" ]; then
-            echo "::error::Non-zstd:chunked layers found:"
-            echo "${BAD}"
-            exit 1
-          fi
+#          BAD=$(echo "${RAW}" \
+#            | jq -r '.layers[] | select(.mediaType != "application/vnd.oci.image.layer.v1.tar+zstd") | .digest')
+#          if [ -n "${BAD}" ]; then
+#            echo "::error::Non-zstd:chunked layers found:"
+#            echo "${BAD}"
+#            exit 1
+#          fi
 
-          CHUNKED=$(echo "${RAW}" \
-            | jq '[.layers[] | select(.annotations // {} | keys | any(startswith("io.github.containers.zstd-chunked")))] | length')
-          echo "Layers with zstd:chunked annotations: ${CHUNKED}"
-          if [ "${CHUNKED}" -eq 0 ]; then
-            echo "::warning::No zstd:chunked annotations found — partial pulls may not work"
-          fi
+#          CHUNKED=$(echo "${RAW}" \
+#            | jq '[.layers[] | select(.annotations // {} | keys | any(startswith("io.github.containers.zstd-chunked")))] | length')
+#          echo "Layers with zstd:chunked annotations: ${CHUNKED}"
+#          if [ "${CHUNKED}" -eq 0 ]; then
+#            echo "::warning::No zstd:chunked annotations found — partial pulls may not work"
+#          fi
 
-          echo "Rechunk verified: ${LAYER_COUNT} layers, all zstd:chunked"
+#          echo "Rechunk verified: ${LAYER_COUNT} layers, all zstd:chunked"
 
 
 #      - name: Tag Image

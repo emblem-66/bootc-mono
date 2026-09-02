@@ -164,6 +164,8 @@ dnf search winboat
 
 dnf search brave
 
+dnf install -y rsms-inter-fonts
+
 dnf install -y syncthing
 
 dnf install -y steam

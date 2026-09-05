@@ -1,0 +1,18 @@
+name: test fedora minimal
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  build:
+    secrets: inherit
+#    permissions:
+#      contents: read
+#      packages: write
+    uses: ./.github/workflows/reusable-action.yml
+    with:
+      image-name: test-minimal
+      containerfile: test/Containerfile-fedora-minimal
+      tag: latest

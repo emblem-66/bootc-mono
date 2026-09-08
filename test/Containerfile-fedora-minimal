@@ -1,6 +1,15 @@
 FROM quay.io/fedora/fedora-bootc:latest
+
+RUN rpm -qa | sort
+
 RUN dnf install -y waybar fuzzel swaylock
+
 RUN dnf install -y niri
+
 RUN dnf install -y noctalia
+
 RUN dnf install -y fuzzel swaybg swaylock swayidle wlogout mako
+
 RUN dnf install -y alacritty nautilus
+
+RUN rpm -qa | sort

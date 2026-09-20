@@ -1,0 +1,19 @@
+name: toml desktop
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  build:
+    secrets: inherit
+#    permissions:
+#      contents: read
+#      packages: write
+    uses: ./.github/workflows/reusable-action.yml
+    with:
+      image-name: toml-test
+      containerfile: test/Containerfile-toml
+      flavor: desktop
+      tag: latest

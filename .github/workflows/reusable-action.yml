@@ -9,6 +9,9 @@ on:
       containerfile:
         required: true
         type: string
+      flavor:
+        required: false
+        type: string
       packages:
         required: false
         type: string
@@ -99,6 +102,16 @@ jobs:
 #            "docker://ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:${{ inputs.tag }}" \
 #            | jq -r '[.layers[].digest] | sort | .[]' > /tmp/prev-layers.txt 2>/dev/null || true
 
+#      - name: Build image (podman)
+#        id: build
+#        if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
+#        run: |
+#          podman build \
+#            --pull \
+#            --cache-from ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }} \
+#            --file ${{ inputs.containerfile }} \
+#            --tag "localhost/${{ inputs.image-name }}:${{ inputs.tag }}" .
+
       - name: Build image (podman)
         id: build
         if: ${{ inputs.force-build || steps.updates.outputs.has_updates == 'true' }}
@@ -107,7 +120,9 @@ jobs:
             --pull \
             --cache-from ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }} \
             --file ${{ inputs.containerfile }} \
+            ${{ inputs.flavor && format('--build-arg FLAVOR={0}', inputs.flavor) || '' }} \
             --tag "localhost/${{ inputs.image-name }}:${{ inputs.tag }}" .
+
 
 
 #      - name: Rechunk (hhd-dev)

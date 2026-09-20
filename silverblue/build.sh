@@ -242,3 +242,16 @@ comm -23 /packagelist_start.txt /packagelist_end.txt || true
 echo ""
 echo "# Added packages"
 comm -13 /packagelist_start.txt /packagelist_end.txt || true
+
+
+rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > /packagelist_end.txt 2>/dev/null
+echo "something"
+{ set +x
+echo ""
+echo "# Removed packages"
+comm -23 /packagelist_start.txt /packagelist_end.txt || true
+
+echo ""
+echo "# Added packages"
+comm -13 /packagelist_start.txt /packagelist_end.txt || true
+set -x; } 2>/dev/null

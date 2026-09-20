@@ -8,7 +8,7 @@ debloat = [
     "WALinuxAgent-udev",
     "cloud-utils-growpart",
     "NetworkManager-cloud-setup",
-    "qemu-user-static",
+    "qemu-user-static*",
 ]
 services = [
     "tailscaled",

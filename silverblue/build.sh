@@ -9,7 +9,6 @@ rpm -qa --qf '%{NAME}\n' | sort
 rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort
 
 rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > /packagelist_start.txt 2>/dev/null
-{ rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > /packagelist_start.txt; } 2>/dev/null
 
 dnf -y install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release{,-extras,-mesa} 
 #dnf -y install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
@@ -234,7 +233,6 @@ chmod 0440 /etc/sudoers.d/90-passwordless-sudo
 
 
 rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > /packagelist_end.txt 2>/dev/null
-{ rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > /packagelist_end.txt; } 2>/dev/null
 
 
 echo ""

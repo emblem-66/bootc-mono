@@ -1,0 +1,53 @@
+[common]
+packages = [
+    "vim",
+    "htop",
+    "tailscale",
+]
+debloat = [
+    "WALinuxAgent-udev",
+    "cloud-utils-growpart",
+    "NetworkManager-cloud-setup",
+    "qemu-user-static",
+]
+services = [
+    "tailscaled",
+]
+user_services = [
+    "pipewire",
+    "wireplumber",
+]
+
+[desktop]
+packages = [
+    "niri",
+    "waybar",
+    "fuzzel",
+    "greetd",
+    "tuigreet",
+]
+debloat = [
+    "toolbox",
+    "firefox",
+]
+services = [
+    "greetd",
+    "docker",
+]
+user_services = [
+    "pipewire-pulse",
+]
+
+[server]
+packages = [
+    "docker-ce",
+    "minidlna",
+    "cockpit",
+]
+debloat = []
+services = [
+    "docker",
+    "cockpit.socket",
+    "minidlna",
+]
+user_services = []

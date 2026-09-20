@@ -1,7 +1,5 @@
 [common]
 packages = [
-    "vim",
-    "htop",
     "tailscale",
 ]
 debloat = [
@@ -14,33 +12,25 @@ services = [
     "tailscaled",
 ]
 user_services = [
-    "pipewire",
-    "wireplumber",
 ]
 
 [desktop]
 packages = [
     "niri",
-    "waybar",
-    "fuzzel",
-    "greetd",
+    "noctalia",
     "tuigreet",
 ]
 debloat = [
-    "toolbox",
-    "firefox",
 ]
 services = [
     "greetd",
-    "docker",
 ]
 user_services = [
-    "pipewire-pulse",
 ]
 
 [server]
 packages = [
-    "docker-ce",
+    "docker",
     "minidlna",
     "cockpit",
 ]

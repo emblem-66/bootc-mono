@@ -228,6 +228,14 @@ echo "%wheel ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-passwordless-sudo
 cat /etc/sudoers.d/90-passwordless-sudo
 chmod 0440 /etc/sudoers.d/90-passwordless-sudo
 
-rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > packagelist_end.txt
 
-comm -13 packagelist_start.txt packagelist_end.txt || true
+
+rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort > /packagelist_end.txt
+
+echo ""
+echo "# Removed packages"
+comm -23 /packagelist_start.txt /packagelist_end.txt || true
+
+echo ""
+echo "# Added packages"
+comm -13 /packagelist_start.txt /packagelist_end.txt || true

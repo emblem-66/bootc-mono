@@ -1,13 +1,14 @@
 FROM scratch AS ctx
-ARG FLAVOR
-RUN test -n "${FLAVOR}" || { echo "ERROR: FLAVOR build arg is required"; exit 1; }
 COPY --chmod=0755 ./test/build.sh /
 COPY ./test/config.toml /config.toml
 #COPY ./common/system_files/ /system_files/common/
 #COPY ./${FLAVOR}/system_files/ /system_files/flavor/
 
 FROM quay.io/fedora/fedora-bootc:latest
+
 ARG FLAVOR
+RUN test -n "${FLAVOR}" || { echo "ERROR: FLAVOR build arg is required"; exit 1; }
+
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \

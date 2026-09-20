@@ -1,6 +1,13 @@
+ARG SUBDIR=server
+
 FROM scratch AS ctx
 
-COPY --chmod=0755 ./server/build.sh /
+ARG SUBDIR
+COPY --chmod=0755 ./${SUBDIR}/build.sh /
+COPY ./${SUBDIR}/packages /packages/specific
+COPY ./common/packages /packages/common
+
+#COPY --chmod=0755 ./server/build.sh /
 
 FROM quay.io/fedora/fedora-bootc:latest
 

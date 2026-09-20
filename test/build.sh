@@ -20,7 +20,7 @@ EOF
 
 # ── Repos ─────────────────────────────────────────────────────────────────────
 
-dnf config-manager setopt fedora-cisco-openh264.enabled=0
+#dnf config-manager setopt fedora-cisco-openh264.enabled=0
 
 # ── Remove ────────────────────────────────────────────────────────────────────
 

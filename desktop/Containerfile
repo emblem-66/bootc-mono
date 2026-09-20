@@ -1,6 +1,11 @@
+ARG SUBDIR=desktop
+
 FROM scratch AS ctx
 
-COPY --chmod=0755 ./desktop/build.sh /
+ARG SUBDIR
+COPY --chmod=0755 ./${SUBDIR}/build.sh /
+COPY ./${SUBDIR}/packages /packages/specific
+COPY ./common/packages /packages/common
 
 FROM quay.io/fedora/fedora-bootc:latest
 

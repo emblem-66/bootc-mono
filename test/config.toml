@@ -18,10 +18,16 @@ packages = [
     "niri",
     "noctalia",
     "tuigreet",
+    "docker",
+    "minidlna",
+    "cockpit",
 ]
 debloat = []
 services = [
     "greetd",
+    "docker",
+    "cockpit.socket",
+    "minidlna",
 ]
 user_services = []
 

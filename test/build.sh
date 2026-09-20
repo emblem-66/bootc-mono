@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -xeuo pipefail
 
+FLAVOR="${1:?ERROR: FLAVOR argument is required}"
+
 # ── Parse TOML ────────────────────────────────────────────────────────────────
 
 parse_toml() {
@@ -8,7 +10,7 @@ parse_toml() {
     local key="$2"
     python3 - << EOF
 import tomllib
-with open('/ctx/packages.toml', 'rb') as f:
+with open('/ctx/config.toml', 'rb') as f:
     data = tomllib.load(f)
 common = data.get('common', {}).get('$key', [])
 flavor = data.get('$section', {}).get('$key', [])

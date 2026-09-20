@@ -15,5 +15,5 @@ jobs:
     with:
       image-name: toml-test
       containerfile: test/Containerfile-toml
-      build-args: FLAVOR=desktop
+      flavor: desktop
       tag: latest

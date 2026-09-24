@@ -1,8 +1,5 @@
 # set of packages for fedora-bootc base image
 
-# base
-bootc
-
 #
 distrobox
 

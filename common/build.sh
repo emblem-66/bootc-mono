@@ -12,23 +12,29 @@ dnf config-manager setopt fedora-cisco-openh264.enabled=0
 
 # ── Packages ──────────────────────────────────────────────────────────────────
 
+remove_packages=()
 mapfile -t remove_packages < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/debloat)
 [[ ${#remove_packages[@]} -gt 0 ]] && dnf remove -y "${remove_packages[@]}"
 
+install_packages=()
 mapfile -t install_packages < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/packages /ctx/packages/specific/packages)
 [[ ${#install_packages[@]} -gt 0 ]] && dnf install -y "${install_packages[@]}"
 
 # ── Systemd ───────────────────────────────────────────────────────────────────
 
+enable_units=()
 mapfile -t enable_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/services /ctx/packages/specific/services)
 [[ ${#enable_units[@]} -gt 0 ]] && systemctl enable "${enable_units[@]}"
 
+disable_units=()
 mapfile -t disable_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/services /ctx/packages/specific/services)
 [[ ${#disable_units[@]} -gt 0 ]] && systemctl disable "${disable_units[@]}"
 
+enable_units=()
 mapfile -t enable_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/services /ctx/packages/specific/services)
 [[ ${#enable_units[@]} -gt 0 ]] && systemctl enable "${enable_units[@]}"
 
+enable_user_units=()
 mapfile -t enable_user_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/user-services /ctx/packages/specific/user-services)
 [[ ${#enable_user_units[@]} -gt 0 ]] && systemctl --global enable "${enable_user_units[@]}"
 

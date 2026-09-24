@@ -11,7 +11,9 @@ debloat = [
 services = [
     "tailscaled",
 ]
-user_services = []
+user_services = [
+    "",
+]
 
 [desktop]
 packages = [
@@ -22,14 +24,18 @@ packages = [
     "minidlna",
     "cockpit",
 ]
-debloat = []
+debloat = [
+    "",
+]
 services = [
     "greetd",
     "docker",
     "cockpit.socket",
     "minidlna",
 ]
-user_services = []
+user_services = [
+    "",
+]
 
 [server]
 packages = [
@@ -37,10 +43,14 @@ packages = [
     "minidlna",
     "cockpit",
 ]
-debloat = []
+debloat = [
+    "",
+]
 services = [
     "docker",
     "cockpit.socket",
     "minidlna",
 ]
-user_services = []
+user_services = [
+    "",
+]

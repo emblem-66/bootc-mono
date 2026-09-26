@@ -1,13 +1,12 @@
 # set of packages for fedora-bootc base image
 
-#
-distrobox
+# Remote access
 cockpit
-
-syncthing
 tailscale
+
+# Utils
 btop
+syncthing
 
 
 
-rsms-inter-fonts

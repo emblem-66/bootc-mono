@@ -4,7 +4,7 @@ RUN rpm -qa | sort
 
 RUN dnf remove -y qemu-user-static* sssd*
 
-RUN dnf install -y waybar fuzzel swaylock
+#RUN dnf install -y waybar fuzzel swaylock
 
 RUN dnf install -y niri
 

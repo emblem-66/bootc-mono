@@ -1,4 +1,17 @@
-flatpak
-distrobox
+
+
+# Session
+tuigreet
+sddm
+
+# Desktop
 niri
 noctalia
+
+# Fonts
+adwaita-fonts
+rsms-inter-fonts
+
+# 
+flatpak
+distrobox

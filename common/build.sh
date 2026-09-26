@@ -22,10 +22,6 @@ mapfile -t install_packages < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/pac
 
 # ── Systemd ───────────────────────────────────────────────────────────────────
 
-enable_units=()
-mapfile -t enable_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/services /ctx/packages/specific/services)
-[[ ${#enable_units[@]} -gt 0 ]] && systemctl enable "${enable_units[@]}"
-
 disable_units=()
 mapfile -t disable_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/services /ctx/packages/specific/services)
 [[ ${#disable_units[@]} -gt 0 ]] && systemctl disable "${disable_units[@]}"
@@ -37,6 +33,10 @@ mapfile -t enable_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/service
 enable_user_units=()
 mapfile -t enable_user_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/user-services /ctx/packages/specific/user-services)
 [[ ${#enable_user_units[@]} -gt 0 ]] && systemctl --global enable "${enable_user_units[@]}"
+
+addwants_graphical_units=()
+mapfile -t addwants_graphical_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/addwants-graphical-units /ctx/packages/specific/addwants-graphical-units)
+[[ ${#addwants_graphical_units[@]} -gt 0 ]] && systemctl --global add-wants graphical-session.target "${addwants_graphical_units[@]}"
 
 # ── Tweaks ────────────────────────────────────────────────────────────────────
 

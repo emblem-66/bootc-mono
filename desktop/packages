@@ -2,7 +2,6 @@
 
 # Session
 tuigreet
-sddm
 
 # Desktop
 niri
@@ -12,6 +11,6 @@ noctalia
 adwaita-fonts
 rsms-inter-fonts
 
-# 
+# Utils
 flatpak
 distrobox

@@ -1,5 +1,3 @@
-
-
 # Session
 tuigreet
 
@@ -11,6 +9,6 @@ noctalia
 adwaita-fonts
 rsms-inter-fonts
 
-# Utils
+# 
 flatpak
 distrobox

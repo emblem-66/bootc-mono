@@ -34,6 +34,8 @@ enable_user_units=()
 mapfile -t enable_user_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/user-services /ctx/packages/specific/user-services)
 [[ ${#enable_user_units[@]} -gt 0 ]] && systemctl --global enable "${enable_user_units[@]}"
 
+dnf autoremove -y
+
 # ── Tweaks ────────────────────────────────────────────────────────────────────
 
 # Update policies

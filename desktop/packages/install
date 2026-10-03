@@ -5,6 +5,12 @@ sddm
 # Desktop
 niri
 #noctalia
+swayidle
+swaylock
+swaybg
+waybar
+mako
+fuzzel
 
 # Fonts
 adwaita-fonts

@@ -7,12 +7,14 @@ RUN dnf autoremove -y
 
 RUN rpm -qa | sort
 
-RUN dnf install -y sddm
-#RUN dnf install -y tuigreet
 
 RUN dnf install -y niri
 #RUN dnf install -y noctalia
 RUN dnf install -y swaybg swaylock swayidle waybar mako wlogout
 RUN dnf install -y alacritty fuzzel nautilus
+
+#RUN dnf install -y tuigreet
+RUN dnf install -y sddm
+
 
 RUN rpm -qa | sort

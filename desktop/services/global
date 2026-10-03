@@ -1,0 +1,5 @@
+swaylock.service
+swayidle.service
+swaybg.service
+mako.service
+waybar.service

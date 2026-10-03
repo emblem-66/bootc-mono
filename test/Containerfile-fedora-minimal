@@ -3,6 +3,7 @@ FROM quay.io/fedora/fedora-bootc:latest
 RUN rpm -qa | sort
 
 RUN dnf remove -y qemu-user-static* sssd*
+RUN dnf autoremove -y
 
 RUN rpm -qa | sort
 

@@ -34,10 +34,6 @@ enable_user_units=()
 mapfile -t enable_user_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/user-services /ctx/packages/specific/user-services)
 [[ ${#enable_user_units[@]} -gt 0 ]] && systemctl --global enable "${enable_user_units[@]}"
 
-addwants_graphical_units=()
-mapfile -t addwants_graphical_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/addwants-graphical-units /ctx/packages/specific/addwants-graphical-units)
-[[ ${#addwants_graphical_units[@]} -gt 0 ]] && systemctl --global add-wants graphical-session.target "${addwants_graphical_units[@]}"
-
 # ── Tweaks ────────────────────────────────────────────────────────────────────
 
 # Update policies
@@ -50,6 +46,16 @@ sed -i 's|#LockLayering.*|LockLayering=true|' /etc/rpm-ostreed.conf
 # Passwordless sudo
 echo "%wheel ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-passwordless-sudo
 chmod 0440 /etc/sudoers.d/90-passwordless-sudo
+
+# ── Desktop ───────────────────────────────────────────────────────────────────
+
+addwants_graphical_units=()
+mapfile -t addwants_graphical_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/addwants-graphical-units /ctx/packages/specific/addwants-graphical-units)
+[[ ${#addwants_graphical_units[@]} -gt 0 ]] && systemctl --global add-wants graphical-session.target "${addwants_graphical_units[@]}"
+
+# SDDM autologin
+install -d -m 755 /etc/sddm.conf.d
+printf '[Autologin]\nUser=pc\nSession=niri\n' > /etc/sddm.conf.d/autologin.conf
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 

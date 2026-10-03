@@ -49,6 +49,7 @@ chmod 0440 /etc/sudoers.d/90-passwordless-sudo
 
 # ── Desktop ───────────────────────────────────────────────────────────────────
 
+# systemd units
 addwants_graphical_units=()
 mapfile -t addwants_graphical_units < <(grep -hv '^\s*#\|^\s*$' /ctx/packages/common/addwants-graphical-units /ctx/packages/specific/addwants-graphical-units)
 [[ ${#addwants_graphical_units[@]} -gt 0 ]] && systemctl --global add-wants graphical-session.target "${addwants_graphical_units[@]}"

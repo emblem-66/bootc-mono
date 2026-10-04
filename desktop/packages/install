@@ -25,3 +25,7 @@ distrobox
 alacritty
 fuzzel
 nautilus
+
+# Hardware
+ddcutil
+ddccontrol

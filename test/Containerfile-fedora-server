@@ -1,0 +1,33 @@
+FROM quay.io/fedora/fedora-bootc:latest
+
+RUN rpm -qa | sort
+
+RUN dnf remove -y qemu-user-static* sssd*
+RUN dnf autoremove -y
+
+RUN rpm -qa | sort
+
+
+#RUN dnf install -y niri
+#RUN dnf install -y noctalia
+#RUN dnf install -y swaybg swaylock swayidle waybar mako wlogout
+#RUN dnf install -y alacritty fuzzel nautilus
+
+#RUN dnf install -y tuigreet
+#RUN dnf install -y sddm
+
+# Docker
+RUN dnf install -y docker
+
+# DLNA
+RUN dnf install -y minidlna
+
+# Remote access
+RUN dnf install -y cockpit
+RUN dnf install -y tailscale
+
+# Utils
+RUN dnf install -y btop
+
+
+RUN rpm -qa | sort
